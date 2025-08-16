@@ -1,10 +1,15 @@
 package ru.practicum;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class StatsView {
-    private final String app;
-    private final String uri;
-    private final Integer hits;
+    private String app;
+    private String uri;
+    private Integer hits;
 }
