@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -24,7 +23,7 @@ public class StatsParams {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime end;
 
-    private List<String> uris = Collections.emptyList();
+    private List<String> uris;
 
     private Boolean unique = false;
 }

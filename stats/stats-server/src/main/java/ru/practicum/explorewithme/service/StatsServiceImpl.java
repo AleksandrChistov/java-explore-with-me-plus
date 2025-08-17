@@ -32,18 +32,17 @@ public class StatsServiceImpl implements StatsService {
     @Transactional(readOnly = true)
     public List<StatsView> getStats(StatsParams param) {
         List<StatsView> viewStats;
-        List<String> uris = param.getUris().isEmpty() ? null : param.getUris();
         if (param.getUnique()) {
             viewStats = statsRepository.findAllUniqueIpAndTimestampBetweenAndUriIn(
                     param.getStart(),
                     param.getEnd(),
-                    uris
+                    param.getUris()
             );
         } else {
             viewStats = statsRepository.findAllByTimestampBetweenAndUriIn(
                     param.getStart(),
                     param.getEnd(),
-                    uris
+                    param.getUris()
             );
         }
         return viewStats;
