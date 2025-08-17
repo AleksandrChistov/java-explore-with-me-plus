@@ -5,7 +5,7 @@ spring:
   main.banner-mode: OFF
   jpa:
     show-sql: true
-    hibernate.ddl-auto: none
+    hibernate.ddl-auto: validate
     properties.hibernate:
       format_sql: true
       jdbc.time_zone: UTC

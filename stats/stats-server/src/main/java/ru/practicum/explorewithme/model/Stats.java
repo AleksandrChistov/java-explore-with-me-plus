@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "stats")
@@ -12,7 +13,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@EqualsAndHashCode
 public class Stats {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,4 +29,19 @@ public class Stats {
 
     @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof Stats)) return false;
+        Stats other = (Stats) obj;
+        return Objects.equals(this.id, other.id) &&
+                Objects.equals(this.timestamp, other.timestamp);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, timestamp);
+    }
 }
+

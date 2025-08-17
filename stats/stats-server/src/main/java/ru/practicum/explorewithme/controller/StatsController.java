@@ -30,7 +30,7 @@ public class StatsController {
 
     @GetMapping("/stats")
     @ResponseStatus(HttpStatus.OK)
-    List<StatsView> getStat(@Valid @RequestParam StatsParams params) {
+    List<StatsView> getStat(@Valid @ModelAttribute StatsParams params) {
         log.info("Поступил запрос get/stats на получение статистики {}", params);
         List<StatsView> viewStats = statsService.getStats(params);
         log.info("Запрос get/stats успешно обработан. Список статистики: {}", viewStats);

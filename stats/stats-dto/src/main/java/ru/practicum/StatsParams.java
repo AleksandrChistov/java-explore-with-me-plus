@@ -6,6 +6,7 @@ import jakarta.validation.constraints.PastOrPresent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -22,7 +23,7 @@ public class StatsParams {
 
     @NotNull(message = "Timestamp cannot be null")
     @PastOrPresent(message = "End date cannot be future")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime end;
 
     private List<String> uris = Collections.emptyList();

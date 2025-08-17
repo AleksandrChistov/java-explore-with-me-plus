@@ -6,5 +6,5 @@ import lombok.Data;
 public class StatsView {
     private final String app;
     private final String uri;
-    private final Integer hits;
+    private final Long hits;
 }

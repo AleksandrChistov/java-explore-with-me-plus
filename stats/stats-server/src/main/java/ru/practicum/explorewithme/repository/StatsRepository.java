@@ -12,16 +12,27 @@ import java.util.List;
 
 
 @Repository
-public interface StatsRepository extends JpaRepository<Stats, Integer> {
+public interface StatsRepository extends JpaRepository<Stats, Long> {
 
-    @Query(value = "SELECT app, uri, COUNT(id) AS countHits FROM stats WHERE timestamp BETWEEN :start AND :end " +
-            "AND (:uris IS EMPTY OR uri IN :uris) GROUP BY app, uri ORDER BY countHits DESC")
-    List<StatsView> findAllByTimestampBetweenAndUriIn(@Param("start") LocalDateTime start,
-                                                      @Param("end") LocalDateTime end,
-                                                      @Param("uris") List<String> uris);
+    @Query("SELECT new ru.practicum.StatsView(s.app, s.uri, COUNT(s.id)) " +
+            "FROM Stats s " +
+            "WHERE s.timestamp BETWEEN :start AND :end " +
+            "AND (:uris IS NULL OR s.uri IN :uris) " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(s.id) DESC")
+    List<StatsView> findAllByTimestampBetweenAndUriIn(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("uris") List<String> uris
+    );
 
-    @Query(value = " SELECT app, uri, COUNT(DISTINCT ip) AS uniqueIps FROM stats WHERE timestamp BETWEEN :start AND :end " +
-            "AND (:uris IS NULL OR uri IN :uris) GROUP BY app, uri ORDER BY uniqueIps DESC ")
+    // Метод для подсчета уникальных IP
+    @Query("SELECT new ru.practicum.StatsView(s.app, s.uri, COUNT(DISTINCT s.ip)) " +
+            "FROM Stats s " +
+            "WHERE s.timestamp BETWEEN :start AND :end " +
+            "AND (:uris IS NULL OR s.uri IN :uris) " +
+            "GROUP BY s.app, s.uri " +
+            "ORDER BY COUNT(DISTINCT s.ip) DESC")
     List<StatsView> findAllUniqueIpAndTimestampBetweenAndUriIn(
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end,

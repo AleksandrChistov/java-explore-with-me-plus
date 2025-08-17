@@ -6,6 +6,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ExploreWithMeMainService {
     public static void main(String[] args) {
-        SpringApplication.run(ExploreWithMeMainService.class, args);
+        try {
+            SpringApplication.run(ExploreWithMeMainService.class, args);
+        } catch (Exception e) {
+            System.err.println("Ошибка запуска приложения:");
+            e.printStackTrace();
+        }
     }
 }
