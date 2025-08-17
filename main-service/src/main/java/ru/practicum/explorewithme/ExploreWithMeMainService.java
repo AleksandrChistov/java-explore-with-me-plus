@@ -16,29 +16,35 @@ import java.util.List;
 @ComponentScan(basePackages = {"ru.practicum.explorewithme", "ru.practicum.client"})
 public class ExploreWithMeMainService {
     public static void main(String[] args) {
-        ConfigurableApplicationContext context = SpringApplication.run(ExploreWithMeMainService.class, args);
-        StatsClient client = context.getBean(StatsClient.class);
 
-        client.hit(new StatsDto("enw", "/events/1", "192.168.0.1", LocalDateTime.now().minusDays(1))).join();
-        client.hit(new StatsDto("enw", "/events/1", "192.168.0.2", LocalDateTime.now())).join();
-        client.hit(new StatsDto("enw", "/events/1", "192.168.0.3", LocalDateTime.now().plusDays(1))).join();
+        try {
+            ConfigurableApplicationContext context = SpringApplication.run(ExploreWithMeMainService.class, args);
+            StatsClient client = context.getBean(StatsClient.class);
 
-        StatsParams params = new StatsParams(
-                LocalDateTime.now().minusDays(2),
-                LocalDateTime.now(),
-                List.of("/events/1"),
-                true
-        );
+            client.hit(new StatsDto("enw", "/events/1", "192.168.0.1", LocalDateTime.now().minusDays(1))).join();
+            client.hit(new StatsDto("enw", "/events/1", "192.168.0.2", LocalDateTime.now())).join();
+            client.hit(new StatsDto("enw", "/events/1", "192.168.0.3", LocalDateTime.now().plusDays(1))).join();
 
-        List<StatsView> stats = client.getStats(params).join();
+            StatsParams params = new StatsParams(
+                    LocalDateTime.now().minusDays(2),
+                    LocalDateTime.now(),
+                    List.of("/events/1"),
+                    true
+            );
 
-        if (stats.size() != 1) {
-            throw new IllegalStateException("Expected 1 stats, got " + stats.size());
-        } else if (stats.getFirst().getHits() != 2) {
-            throw new IllegalStateException("Expected 2 hits, got " + stats.getFirst().getHits());
+            List<StatsView> stats = client.getStats(params).join();
+
+            if (stats.size() != 1) {
+                throw new IllegalStateException("Expected 1 stats, got " + stats.size());
+            } else if (stats.getFirst().getHits() != 2) {
+                throw new IllegalStateException("Expected 2 hits, got " + stats.getFirst().getHits());
+            }
+            System.out.println("stats size = " + stats.size());
+            System.out.println("stat hist = " + stats.getFirst().getHits());
+
+        } catch (Exception e) {
+            System.err.println("Ошибка запуска приложения:");
+            e.printStackTrace();
         }
-        System.out.println("stats size = " + stats.size());
-        System.out.println("stat hist = " + stats.getFirst().getHits());
-
     }
 }
