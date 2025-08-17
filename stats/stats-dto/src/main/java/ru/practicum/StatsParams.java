@@ -21,7 +21,6 @@ public class StatsParams {
     private LocalDateTime start;
 
     @NotNull(message = "Timestamp cannot be null")
-    @PastOrPresent(message = "End date cannot be future")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime end;
 
