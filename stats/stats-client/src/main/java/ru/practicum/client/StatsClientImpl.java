@@ -15,7 +15,6 @@ import java.net.http.HttpResponse;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Component
 public class StatsClientImpl implements StatsClient {
@@ -32,7 +31,7 @@ public class StatsClientImpl implements StatsClient {
     }
 
     @Override
-    public CompletableFuture<Void> hit(StatsDto statsDto) {
+    public void hit(StatsDto statsDto) {
         try {
             String requestBody = objectMapper.writeValueAsString(statsDto);
 
@@ -42,22 +41,18 @@ public class StatsClientImpl implements StatsClient {
                     .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                     .build();
 
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.discarding())
-                    .thenApply(response -> {
-                        if (response.statusCode() >= 400) {
-                            throw new StatsClientException("Failed to send hit: " + response.statusCode());
-                        }
-                        return null;
-                    });
+            HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+
+            if (response.statusCode() >= 400) {
+                throw new StatsClientException("Failed to send hit: " + response.statusCode());
+            }
         } catch (Exception e) {
-            CompletableFuture<Void> future = new CompletableFuture<>();
-            future.completeExceptionally(e);
-            return future;
+            throw new StatsClientException("Failed to send hit", e);
         }
     }
 
     @Override
-    public CompletableFuture<List<StatsView>> getStats(StatsParams statsParams) {
+    public List<StatsView> getStats(StatsParams statsParams) {
         try {
             UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(serverUrl + "/stats")
                     .queryParam("start", encodeDateTime(statsParams.getStart()))
@@ -77,24 +72,18 @@ public class StatsClientImpl implements StatsClient {
                     .GET()
                     .build();
 
-            return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenApply(response -> {
-                        if (response.statusCode() >= 400) {
-                            throw new StatsClientException("Failed to get stats: " + response.statusCode());
-                        }
-                        try {
-                            return objectMapper.readValue(
-                                    response.body(),
-                                    objectMapper.getTypeFactory().constructCollectionType(List.class, StatsView.class)
-                            );
-                        } catch (Exception e) {
-                            throw new StatsClientException("Failed to parse stats response", e);
-                        }
-                    });
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 400) {
+                throw new StatsClientException("Failed to get stats: " + response.statusCode());
+            }
+
+            return objectMapper.readValue(
+                    response.body(),
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, StatsView.class)
+            );
         } catch (Exception e) {
-            CompletableFuture<List<StatsView>> future = new CompletableFuture<>();
-            future.completeExceptionally(e);
-            return future;
+            throw new StatsClientException("Failed to get stats", e);
         }
     }
 
