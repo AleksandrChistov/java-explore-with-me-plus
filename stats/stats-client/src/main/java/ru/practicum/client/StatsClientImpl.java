@@ -42,7 +42,7 @@ public class StatsClientImpl implements StatsClient {
                     .build();
 
             HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
-            
+
             if (response.statusCode() >= 400) {
                 throw new StatsClientException("Failed to send hit: " + response.statusCode());
             }
@@ -73,11 +73,11 @@ public class StatsClientImpl implements StatsClient {
                     .build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            
+
             if (response.statusCode() >= 400) {
                 throw new StatsClientException("Failed to get stats: " + response.statusCode());
             }
-            
+
             return objectMapper.readValue(
                     response.body(),
                     objectMapper.getTypeFactory().constructCollectionType(List.class, StatsView.class)
