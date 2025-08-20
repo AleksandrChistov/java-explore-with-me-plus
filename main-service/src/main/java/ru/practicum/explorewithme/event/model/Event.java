@@ -9,7 +9,6 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.event.enums.State;
-import ru.practicum.explorewithme.location.model.Location;
 import ru.practicum.explorewithme.user.model.User;
 
 import java.time.LocalDateTime;

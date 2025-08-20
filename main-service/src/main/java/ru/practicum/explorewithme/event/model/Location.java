@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.location.model;
+package ru.practicum.explorewithme.event.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
