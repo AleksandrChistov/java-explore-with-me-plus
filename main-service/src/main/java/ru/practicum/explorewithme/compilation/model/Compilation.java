@@ -34,4 +34,17 @@ public class Compilation {
     )
     @ToString.Exclude
     private Set<Event> events;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Compilation that = (Compilation) o;
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
