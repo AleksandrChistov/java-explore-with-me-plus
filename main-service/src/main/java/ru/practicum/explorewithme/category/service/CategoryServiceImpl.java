@@ -31,7 +31,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public ResponseCategoryDto getCategory(Long catId) {
+    public ResponseCategoryDto getCategory(long catId) {
         return categoryRepository.findById(catId)
                 .map(categoryMapper::toCategoryDto)
                 .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
