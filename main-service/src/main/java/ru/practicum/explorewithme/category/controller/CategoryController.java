@@ -7,22 +7,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.category.dto.CategoryDto;
+import ru.practicum.explorewithme.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.category.service.CategoryService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/categories", produces = MediaType.APPLICATION_JSON_VALUE)
 @Validated
 @RequiredArgsConstructor
+@RequestMapping(path = "/categories", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CategoryController {
 
     private final CategoryService categoryService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<CategoryDto> getCategories(
+    public List<ResponseCategoryDto> getAll(
             @PositiveOrZero @RequestParam(defaultValue = "0") int from,
             @PositiveOrZero @RequestParam(defaultValue = "10") int size
     ) {
@@ -31,7 +31,7 @@ public class CategoryController {
 
     @GetMapping("/{catId}")
     @ResponseStatus(HttpStatus.OK)
-    public CategoryDto getCategory(@Positive @PathVariable Long catId) {
+    public ResponseCategoryDto getById(@Positive @PathVariable Long catId) {
         return categoryService.getCategory(catId);
     }
 
