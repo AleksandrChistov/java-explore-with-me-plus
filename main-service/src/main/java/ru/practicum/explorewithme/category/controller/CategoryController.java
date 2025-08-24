@@ -24,7 +24,7 @@ public class CategoryController {
     @ResponseStatus(HttpStatus.OK)
     public List<ResponseCategoryDto> getAll(
             @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-            @PositiveOrZero @RequestParam(defaultValue = "10") int size
+            @Positive @RequestParam(defaultValue = "10") int size
     ) {
         return categoryService.getCategories(from, size);
     }
