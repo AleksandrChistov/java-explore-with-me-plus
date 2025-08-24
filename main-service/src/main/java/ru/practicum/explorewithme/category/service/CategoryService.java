@@ -8,6 +8,6 @@ public interface CategoryService {
 
     List<ResponseCategoryDto> getCategories(int from, int size);
 
-    ResponseCategoryDto getCategory(Long catId);
+    ResponseCategoryDto getCategory(long catId);
 
 }
