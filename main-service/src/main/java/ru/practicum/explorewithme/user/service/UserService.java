@@ -7,7 +7,7 @@ import ru.practicum.explorewithme.user.model.User;
 
 import java.util.List;
 
-@Service
+
 public interface UserService {
     UserDto create(NewUserRequest userDto);
 

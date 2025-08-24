@@ -2,6 +2,7 @@ package ru.practicum.explorewithme.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.error.exception.ValidationException;
 import ru.practicum.explorewithme.user.dto.NewUserRequest;
@@ -11,7 +12,7 @@ import ru.practicum.explorewithme.user.model.User;
 import ru.practicum.explorewithme.user.storage.UserRepository;
 
 import java.util.List;
-
+@Service
 @RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService {
