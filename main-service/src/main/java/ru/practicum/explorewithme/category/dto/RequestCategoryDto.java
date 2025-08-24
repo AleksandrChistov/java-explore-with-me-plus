@@ -1,5 +1,6 @@
 package ru.practicum.explorewithme.category.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Getter
@@ -8,6 +9,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewCategoryDto {
+public class RequestCategoryDto {
+    @NotBlank
     private String name;
 }

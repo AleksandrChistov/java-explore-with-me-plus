@@ -1,13 +1,13 @@
 package ru.practicum.explorewithme.category.service;
 
-import ru.practicum.explorewithme.category.dto.CategoryDto;
+import ru.practicum.explorewithme.category.dto.ResponseCategoryDto;
 
 import java.util.List;
 
 public interface CategoryService {
 
-    List<CategoryDto> getCategories(int from, int size);
+    List<ResponseCategoryDto> getCategories(int from, int size);
 
-    CategoryDto getCategory(Long catId);
+    ResponseCategoryDto getCategory(Long catId);
 
 }

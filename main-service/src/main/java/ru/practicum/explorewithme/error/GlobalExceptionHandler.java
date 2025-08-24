@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
         log.warn("404 {}", ex.getMessage());
         String stackTrace = getStackTrace(ex);
         String timestamp = getCurrentTimestamp();
-        return getResponseEntity(HttpStatus.NOT_FOUND, ex.getMessage(), "Required object was not found", timestamp, stackTrace);
+        return getResponseEntity(HttpStatus.NOT_FOUND, ex.getMessage(), "The required object was not found.", timestamp, stackTrace);
     }
 
     @ExceptionHandler(Exception.class)
