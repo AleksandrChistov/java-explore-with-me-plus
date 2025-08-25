@@ -120,7 +120,7 @@ class AdminCategoryControllerTest {
     }
 
     @Test
-    void update_shouldUpdateCategory_whenNameIsBlank() throws Exception {
+    void update_shouldReturnBadRequest_whenNameIsBlank() throws Exception {
         Category category = new Category();
         category.setName("Первая категория");
 
