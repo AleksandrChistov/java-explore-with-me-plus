@@ -29,10 +29,12 @@ public class AdminUserController {
     }
 
     @GetMapping
-    public List<UserDto> getAllUsers(@RequestParam(required = false) Boolean pinned,
-                                     @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-                                     @Positive @RequestParam(defaultValue = "10") int size) {
-        return userService.getAll(pinned, from, size);
+    public List<UserDto> getUsers(
+            @RequestParam(required = false) List<Long> ids,
+            @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+            @Positive @RequestParam(defaultValue = "10") int size) {
+
+        return userService.getUsers(ids, from, size);
     }
 
     @DeleteMapping("/{userId}")

@@ -2,8 +2,10 @@ package ru.practicum.explorewithme.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.user.dto.NewUserRequest;
@@ -13,6 +15,7 @@ import ru.practicum.explorewithme.user.model.User;
 import ru.practicum.explorewithme.user.storage.UserRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,18 +35,22 @@ public class AdminUserServiceImp implements AdminUserService {
         return mapper.toUserDto(repository.save(user));
     }
 
-    @Override
-    public List<UserDto> getAll(Boolean pinned, int from, int size) {
-        log.info("get all users");
-        Pageable pageable = PageRequest.of(from / size, size);
-        if (pinned == null) {
-            return repository.findAll(pageable)
-                    .map(mapper::toUserDto)
-                    .toList();
-        } else {
-            return mapper.toDtoList(repository.findAllByPinned(pinned, pageable));
+    public List<UserDto> getUsers(List<Long> ids, int from, int size) {
+        log.info("Getting users with ids: {}, from: {}, size: {}", ids, from, size);
 
+        int pageNumber = from / size;
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by("id").ascending());
+
+        Page<User> usersPage;
+
+        if (ids == null || ids.isEmpty()) {
+            usersPage = repository.findAll(pageable);
+        } else {
+            usersPage = repository.findAllByIdIn(ids, pageable);
         }
+        return usersPage.getContent().stream()
+                .map(mapper::toUserDto)
+                .collect(Collectors.toList());
     }
 
     @Override

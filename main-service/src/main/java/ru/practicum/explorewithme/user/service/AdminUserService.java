@@ -9,7 +9,7 @@ import java.util.List;
 public interface AdminUserService {
     UserDto create(NewUserRequest userDto);
 
-    List<UserDto> getAll(Boolean pinned, int from, int size);
+    List<UserDto> getUsers(List<Long> ids, int from, int size);
 
     void delete(Long userId);
 }
