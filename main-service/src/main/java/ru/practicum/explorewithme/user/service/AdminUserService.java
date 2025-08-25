@@ -1,17 +1,15 @@
 package ru.practicum.explorewithme.user.service;
 
-import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.user.dto.NewUserRequest;
 import ru.practicum.explorewithme.user.dto.UserDto;
-import ru.practicum.explorewithme.user.model.User;
 
 import java.util.List;
 
 
-public interface UserService {
+public interface AdminUserService {
     UserDto create(NewUserRequest userDto);
 
-    List<UserDto> getAll();
+    List<UserDto> getAll(Boolean pinned, int from, int size);
 
     void delete(Long userId);
 }

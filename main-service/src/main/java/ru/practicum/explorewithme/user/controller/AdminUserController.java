@@ -1,14 +1,16 @@
 package ru.practicum.explorewithme.user.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.explorewithme.user.mapper.UserMapper;
 import ru.practicum.explorewithme.user.dto.NewUserRequest;
 import ru.practicum.explorewithme.user.dto.UserDto;
-import ru.practicum.explorewithme.user.service.UserService;
+import ru.practicum.explorewithme.user.mapper.UserMapper;
+import ru.practicum.explorewithme.user.service.AdminUserService;
 
 import java.util.List;
 
@@ -17,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminUserController {
-    private final UserService userService;
+    private final AdminUserService userService;
     private final UserMapper mapper;
 
     @PostMapping
@@ -27,8 +29,10 @@ public class AdminUserController {
     }
 
     @GetMapping
-    public List<UserDto> getAllUsers(){
-        return userService.getAll();
+    public List<UserDto> getAllUsers(@RequestParam(required = false) Boolean pinned,
+                                     @PositiveOrZero @RequestParam(defaultValue = "0") int from,
+                                     @Positive @RequestParam(defaultValue = "10") int size) {
+        return userService.getAll(pinned, from, size);
     }
 
     @DeleteMapping("/{userId}")

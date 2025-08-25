@@ -1,4 +1,5 @@
 package ru.practicum.explorewithme.user.mapper;
+
 import org.mapstruct.Mapper;
 import ru.practicum.explorewithme.user.dto.NewUserRequest;
 import ru.practicum.explorewithme.user.dto.UserDto;
@@ -10,9 +11,9 @@ import java.util.List;
 public interface UserMapper {
 
 
-public User toUser(NewUserRequest newUserRequest);
+    public User toUser(NewUserRequest newUserRequest);
 
-public UserDto toUserDto(User user);
+    public UserDto toUserDto(User user);
 
-public List<UserDto> toDtoList(List<User> userList);
+    public List<UserDto> toDtoList(List<User> userList);
 }
