@@ -42,8 +42,9 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
 
     @Override
     public void delete(long catId) {
-        categoryRepository.findById(catId)
-                .orElseThrow(() -> new NotFoundException("Category with id=" + catId + " was not found"));
+        if (!categoryRepository.existsById(catId)) {
+            throw new NotFoundException("Category with id=" + catId + " was not found");
+        }
 
         // todo: с категорией не должно быть связано ни одного события
         // /admin/events?categories=1&size=1

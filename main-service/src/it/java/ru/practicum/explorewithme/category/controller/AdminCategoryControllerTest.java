@@ -1,4 +1,4 @@
-package ru.practicum.explorewithme.controller;
+package ru.practicum.explorewithme.category.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityManager;
@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-import ru.practicum.explorewithme.category.controller.AdminCategoryController;
 import ru.practicum.explorewithme.category.dto.RequestCategoryDto;
 import ru.practicum.explorewithme.category.model.Category;
 
