@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.compilation.dao.CompilationRepository;
-import ru.practicum.explorewithme.compilation.dto.CompilationDto;
+import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
 import ru.practicum.explorewithme.compilation.mapper.CompilationMapper;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 
@@ -22,7 +22,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final CompilationMapper compilationMapper;
 
     @Override
-    public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
+    public List<ResponseCompilationDto> getCompilations(Boolean pinned, int from, int size) {
         Pageable pageable = PageRequest.of(from / size, size);
         if (pinned == null) {
             return compilationRepository
@@ -38,7 +38,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
-    public CompilationDto getCompilation(long compId) {
+    public ResponseCompilationDto getCompilation(long compId) {
         return compilationRepository.findById(compId)
                 .map(compilationMapper::toCompilationDto)
                 .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
