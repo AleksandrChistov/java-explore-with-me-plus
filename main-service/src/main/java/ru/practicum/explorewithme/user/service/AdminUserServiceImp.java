@@ -50,7 +50,7 @@ public class AdminUserServiceImp implements AdminUserService {
         }
         return usersPage.getContent().stream()
                 .map(mapper::toUserDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

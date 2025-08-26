@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.user.dto.NewUserRequest;
 import ru.practicum.explorewithme.user.dto.UserDto;
-import ru.practicum.explorewithme.user.mapper.UserMapper;
 import ru.practicum.explorewithme.user.service.AdminUserService;
 
 import java.util.List;
@@ -20,7 +19,6 @@ import java.util.List;
 @Slf4j
 public class AdminUserController {
     private final AdminUserService userService;
-    private final UserMapper mapper;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
