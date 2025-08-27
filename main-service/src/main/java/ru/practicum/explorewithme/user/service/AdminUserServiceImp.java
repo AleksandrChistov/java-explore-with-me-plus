@@ -15,7 +15,6 @@ import ru.practicum.explorewithme.user.model.User;
 import ru.practicum.explorewithme.user.storage.UserRepository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,7 +47,7 @@ public class AdminUserServiceImp implements AdminUserService {
         } else {
             usersPage = repository.findAllByIdIn(ids, pageable);
         }
-        return usersPage.getContent().stream()
+        return usersPage
                 .map(mapper::toUserDto)
                 .toList();
     }
