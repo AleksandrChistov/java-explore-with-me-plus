@@ -7,7 +7,8 @@ services:
       - "9090:9090"
       - "5005:5005" # порт для отладки
     depends_on:
-      - stats-db
+      stats-db:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
@@ -34,7 +35,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - ewm-db
+      ewm-db:
+        condition: service_healthy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
