@@ -62,10 +62,10 @@ public class Event {
     private Location location;
 
     @Column(name = "paid", nullable = false)
-    private Boolean paid = false;
+    private Boolean paid;
 
     @Column(name = "participant_limit", nullable = false)
-    private Long participantLimit = 0L;
+    private Long participantLimit;
 
     @Column(name = "request_moderation", nullable = false)
     private Boolean requestModeration = true;
