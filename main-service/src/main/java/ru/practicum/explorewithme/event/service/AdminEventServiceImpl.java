@@ -75,12 +75,12 @@ public class AdminEventServiceImpl implements AdminEventService {
         if (updateEventRequest.getEventDate() != null) {
             event.setEventDate(updateEventRequest.getEventDate());
         }
-        if (Objects.equals(updateEventRequest.getStateAction(), StateAction.REJECT_EVENT)) {
+        if (Objects.equals(updateEventRequest.getStateAction(), StateAction.REJECT_EVENT.name())) {
             if (Objects.equals(event.getState(), State.PUBLISHED)) {
                 throw new ValidationException("Событие нельзя отклонить, если оно опубликовано (PUBLISHED)");
             }
             event.setState(State.CANCELED);
-        } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT)) {
+        } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT.name())) {
             if (LocalDateTime.now().plusHours(1).isAfter(event.getEventDate())) {
                 throw new ValidationException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
             }

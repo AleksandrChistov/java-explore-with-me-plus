@@ -114,9 +114,9 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             event.setEventDate(updateEventRequest.getEventDate());
         }
 
-        if (Objects.equals(updateEventRequest.getStateAction(), StateAction.CANCEL_REVIEW)) {
+        if (Objects.equals(updateEventRequest.getStateAction(), StateAction.CANCEL_REVIEW.name())) {
             event.setState(State.CANCELED);
-        } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.SEND_TO_REVIEW)) {
+        } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.SEND_TO_REVIEW.name())) {
             event.setState(State.PENDING);
         }
 
