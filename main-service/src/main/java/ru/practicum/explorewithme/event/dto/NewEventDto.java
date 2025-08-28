@@ -15,7 +15,7 @@ public class NewEventDto {
     private Long category;
     private String description;
     private LocalDateTime eventDate;
-    private Location location;
+    private LocationDto locationDto;
     private Boolean paid;
     private Long participantLimit;
     private Boolean requestModeration;

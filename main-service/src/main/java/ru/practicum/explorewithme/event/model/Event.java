@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
+@Builder
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,7 +65,7 @@ public class Event {
     private Boolean paid = false;
 
     @Column(name = "participant_limit", nullable = false)
-    private Integer participantLimit = 0;
+    private Long participantLimit = 0L;
 
     @Column(name = "request_moderation", nullable = false)
     private Boolean requestModeration = true;
