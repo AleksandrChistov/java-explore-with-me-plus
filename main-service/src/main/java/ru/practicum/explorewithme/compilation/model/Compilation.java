@@ -7,6 +7,7 @@ import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.explorewithme.event.model.Event;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -23,7 +24,7 @@ public class Compilation {
     private Boolean pinned = false;
 
     @NotBlank
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", length = 50, nullable = false, unique = true)
     private String title;
 
     @ManyToMany
@@ -33,7 +34,7 @@ public class Compilation {
             inverseJoinColumns = @JoinColumn(name = "event_id")
     )
     @ToString.Exclude
-    private Set<Event> events;
+    private Set<Event> events = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {

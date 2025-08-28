@@ -1,13 +1,13 @@
 package ru.practicum.explorewithme.compilation.service;
 
-import ru.practicum.explorewithme.compilation.dto.CompilationDto;
+import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
 
 import java.util.List;
 
 public interface CompilationService {
 
-    List<CompilationDto> getCompilations(Boolean pinned, int from, int size);
+    List<ResponseCompilationDto> getCompilations(Boolean pinned, int from, int size);
 
-    CompilationDto getCompilation(long compId);
+    ResponseCompilationDto getCompilation(long compId);
 
 }
