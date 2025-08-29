@@ -1,12 +1,14 @@
 package ru.practicum.explorewithme.event.mapper;
 
-import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.category.mapper.CategoryMapper;
-import ru.practicum.explorewithme.event.dto.*;
+import ru.practicum.explorewithme.category.model.Category;
+import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.event.dto.NewEventDto;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.user.model.User;
 import ru.practicum.explorewithme.user.mapper.UserMapper;
+import ru.practicum.explorewithme.user.model.User;
 
 import java.time.LocalDateTime;
 
@@ -26,7 +28,7 @@ public class EventMapper {
                 .annotation(newEventDto.getAnnotation())
                 .description(newEventDto.getDescription())
                 .state(State.PENDING)
-                .location(LocationMapper.toEntity(newEventDto.getLocationDto()))
+                .location(LocationMapper.toEntity(newEventDto.getLocation()))
                 .participantLimit(newEventDto.getParticipantLimit())
                 .requestModeration(newEventDto.getRequestModeration())
                 .paid(newEventDto.getPaid())
@@ -52,7 +54,7 @@ public class EventMapper {
                 .annotation(event.getAnnotation())
                 .description(event.getDescription())
                 .state(String.valueOf(event.getState()))
-                .locationDto(LocationMapper.toDto(event.getLocation()))
+                .location(LocationMapper.toDto(event.getLocation()))
                 .participantLimit(event.getParticipantLimit())
                 .requestModeration(event.getRequestModeration())
                 .paid(event.getPaid())

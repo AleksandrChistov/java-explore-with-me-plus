@@ -51,7 +51,7 @@ public class PrivateEventController {
             @RequestParam(defaultValue = "0") Long from,
             @RequestParam(defaultValue = "10") Long size
     ) {
-        log.info("Получение списка событий созданных пользователем с ID " + userId);
+        log.info("Получение списка событий созданных пользователем с ID {}", userId);
         return privateEventService.getAll(userId, from, size);
     }
 
@@ -60,7 +60,7 @@ public class PrivateEventController {
             @PathVariable @Positive Long userId,
             @PathVariable @Positive Long eventId
     ) {
-        log.info("Получение пользователем с ID " + userId + " информации о событии с ID " + eventId);
+        log.info("Получение пользователем с ID {} информации о событии с ID {}", userId, eventId);
         return privateEventService.getById(userId, eventId);
     }
 }

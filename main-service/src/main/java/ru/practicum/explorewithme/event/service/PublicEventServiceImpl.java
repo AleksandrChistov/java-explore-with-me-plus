@@ -1,24 +1,24 @@
 package ru.practicum.explorewithme.event.service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsDto;
-import ru.practicum.explorewithme.event.dto.*;
+import ru.practicum.client.StatsClient;
+import ru.practicum.explorewithme.error.exception.BadRequestException;
+import ru.practicum.explorewithme.error.exception.NotFoundException;
+import ru.practicum.explorewithme.event.dao.EventRepository;
+import ru.practicum.explorewithme.event.dao.JpaSpecifications;
+import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.event.dto.EventParams;
+import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.enums.EventsSort;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.event.model.View;
-import ru.practicum.explorewithme.event.dao.EventRepository;
-import ru.practicum.explorewithme.event.dao.JpaSpecifications;
-import ru.practicum.explorewithme.event.dao.ViewRepository;
-import ru.practicum.client.StatsClient;
-import ru.practicum.explorewithme.error.exception.BadRequestException;
-import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
 import ru.practicum.explorewithme.request.enums.Status;
 
@@ -31,14 +31,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@AllArgsConstructor
 @Transactional
+@RequiredArgsConstructor
 public class PublicEventServiceImpl implements PublicEventService {
 
     private final StatsClient statClient;
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-    private final ViewRepository viewRepository;
+//    private final ViewRepository viewRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -71,12 +71,14 @@ public class PublicEventServiceImpl implements PublicEventService {
                         r -> (Long) r[0],
                         r -> (Long) r[1]
                 ));
-        Map<Long, Long> views = viewRepository.countsByEventIds(eventIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        r -> (Long) r[0],
-                        r -> (Long) r[1]
-                ));
+
+        // todo: why does it need? Is it really correct calculations?
+//        Map<Long, Long> views = viewRepository.countsByEventIds(eventIds)
+//                .stream()
+//                .collect(Collectors.toMap(
+//                        r -> (Long) r[0],
+//                        r -> (Long) r[1]
+//                ));
 
         statClient.hit(StatsDto.builder()
                 .ip(request.getRemoteAddr())
@@ -89,7 +91,8 @@ public class PublicEventServiceImpl implements PublicEventService {
         List<EventShortDto> result = events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
                         Optional.ofNullable(confirmedRequests.get(event.getId())).orElse(0L),
-                        Optional.ofNullable(views.get(event.getId())).orElse(0L)))
+//                        Optional.ofNullable(views.get(event.getId())).orElse(0L)))
+                        0L))
                 .toList();
         log.info("Метод вернул {} событий.", result.size());
         return result;
@@ -101,16 +104,16 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .orElseThrow(() -> new NotFoundException("Событие не найдено."));
 
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
-        Long views = viewRepository.countByEventId(eventId);
+//        Long views = viewRepository.countByEventId(eventId);
 
-        if (!viewRepository.existsByEventIdAndIp(eventId, request.getRemoteAddr())) {
-            View view = View.builder()
-                    .event(event)
-                    .ip(request.getRemoteAddr())
-                    .build();
-            viewRepository.save(view);
-            log.info("Зарегистрирован новый просмотр события с ID={}. IP-адрес: {}", eventId, request.getRemoteAddr());
-        }
+//        if (!viewRepository.existsByEventIdAndIp(eventId, request.getRemoteAddr())) {
+//            View view = View.builder()
+//                    .event(event)
+//                    .ip(request.getRemoteAddr())
+//                    .build();
+//            viewRepository.save(view);
+//            log.info("Зарегистрирован новый просмотр события с ID={}. IP-адрес: {}", eventId, request.getRemoteAddr());
+//        }
 
         statClient.hit(StatsDto.builder()
                 .ip(request.getRemoteAddr())
@@ -119,7 +122,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .timestamp(LocalDateTime.now())
                 .build());
         log.info("Статистика сохранена.");
-        EventFullDto dto = EventMapper.toEventFullDto(event, confirmedRequests, views);
+        EventFullDto dto = EventMapper.toEventFullDto(event, confirmedRequests, 0L);
         log.debug("Получено событие с ID={}: {}", eventId, dto);
         return dto;
     }

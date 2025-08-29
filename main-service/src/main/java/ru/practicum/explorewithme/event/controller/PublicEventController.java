@@ -47,7 +47,7 @@ public class PublicEventController {
                 .from(from)
                 .size(size)
                 .build();
-        log.info("Получение событий с параметрами: " + params.toString());
+        log.info("Получение событий с параметрами: {}", params.toString());
         return publicEventService.getAllByParams(params, request);
     }
 
@@ -56,7 +56,7 @@ public class PublicEventController {
             @PathVariable @Positive Long id,
             HttpServletRequest request
     ) {
-        log.info("Получение события по ID" + id);
+        log.info("Получение события по ID {}", id);
         return publicEventService.getById(id, request);
     }
 

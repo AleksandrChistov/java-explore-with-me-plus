@@ -13,8 +13,7 @@ import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.LocationMapper;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.event.dao.EventRepository;
-import ru.practicum.explorewithme.event.dao.ViewRepository;
-import ru.practicum.explorewithme.error.exception.ValidationException;
+import ru.practicum.explorewithme.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.request.enums.Status;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
@@ -37,7 +36,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-    private final ViewRepository viewRepository;
+//    private final ViewRepository viewRepository;
 
     @Override
     public EventFullDto create(Long userId, NewEventDto newEventDto) {
@@ -61,18 +60,18 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         if (!Objects.equals(initiator.getId(), event.getInitiator().getId())) {
             log.error("Пользователь с ID {} пытается обновить чужое событие с ID {}", userId, eventId);
-            throw new ValidationException("Пользователь с ID " + userId + " не является инициатором события c ID " + eventId);
+            throw new RuleViolationException("Пользователь с ID " + userId + " не является инициатором события c ID " + eventId);
         }
 
         if (event.getState() != State.PENDING && event.getState() != State.CANCELED) {
             log.error("Невозможно обновить событие с ID {}: неверный статус события", eventId);
-            throw new ValidationException("Изменить можно только события в статусах PENDING и CANCELED");
+            throw new RuleViolationException("Изменить можно только события в статусах PENDING и CANCELED");
         }
 
         if (updateEventRequest.getEventDate() != null &&
                 updateEventRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             log.error("Ошибка в дате события с ID {}: новая дата ранее двух часов от текущего момента", eventId);
-            throw new ValidationException("Дата и время на которые намечено событие не может быть раньше, чем через два " +
+            throw new RuleViolationException("Дата и время на которые намечено событие не может быть раньше, чем через два " +
                     "часа от текущего момента");
         }
 
@@ -94,8 +93,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             event.setDescription(updateEventRequest.getDescription());
         }
 
-        if (updateEventRequest.getLocationDto() != null) {
-            event.setLocation(LocationMapper.toEntity(updateEventRequest.getLocationDto()));
+        if (updateEventRequest.getLocation() != null) {
+            event.setLocation(LocationMapper.toEntity(updateEventRequest.getLocation()));
         }
 
         if (updateEventRequest.getPaid() != null) {
@@ -123,8 +122,8 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         eventRepository.save(event);
         log.info("Событие с ID {} обновлено пользователем с ID {}.", eventId, userId);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
-        Long views = viewRepository.countByEventId(eventId);
-        return EventMapper.toEventFullDto(event, confirmedRequests, views);
+//        Long views = viewRepository.countByEventId(eventId);
+        return EventMapper.toEventFullDto(event, confirmedRequests, 0L);
     }
 
     @Override
@@ -137,11 +136,11 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         if (!Objects.equals(initiator.getId(), event.getInitiator().getId())) {
             log.error("Пользователь с ID {} пытается получить чужое событие с ID {}", userId, eventId);
-            throw new ValidationException("Пользователь с ID " + userId + " не является инициатором события c ID " + eventId);
+            throw new RuleViolationException("Пользователь с ID " + userId + " не является инициатором события c ID " + eventId);
         }
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
-        Long views = viewRepository.countByEventId(eventId);
-        return EventMapper.toEventFullDto(event, confirmedRequests, views);
+//        Long views = viewRepository.countByEventId(eventId);
+        return EventMapper.toEventFullDto(event, confirmedRequests, 0L);
     }
 
     @Override
@@ -160,15 +159,16 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                         r -> (Long) r[0],
                         r -> (Long) r[1]
                 ));
-        Map<Long, Long> viewsMap = viewRepository.countsByEventIds(eventIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        r -> (Long) r[0],
-                        r -> (Long) r[1]
-                ));
+//        Map<Long, Long> viewsMap = viewRepository.countsByEventIds(eventIds)
+//                .stream()
+//                .collect(Collectors.toMap(
+//                        r -> (Long) r[0],
+//                        r -> (Long) r[1]
+//                ));
 
         return events.stream()
-                .map(e -> EventMapper.toEventShortDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
+//                .map(e -> EventMapper.toEventShortDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
+                .map(e -> EventMapper.toEventShortDto(e, confirmedRequestsMap.get(e.getId()), 0L))
                 .toList();
     }
 }

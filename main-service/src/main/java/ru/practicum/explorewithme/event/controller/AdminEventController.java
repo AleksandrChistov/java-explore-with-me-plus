@@ -32,7 +32,7 @@ public class AdminEventController {
             @PathVariable Long eventId,
             @RequestBody @Valid UpdateEventRequest updateEventRequest
     ) {
-        log.info("Обновление администратором события с ID " + eventId + ". Новые данные: " + updateEventRequest.toString());
+        log.info("Обновление администратором события с ID {}. Новые данные: {}", eventId, updateEventRequest.toString());
         return adminEventService.update(eventId, updateEventRequest);
     }
 
@@ -56,7 +56,7 @@ public class AdminEventController {
                 .size(size)
                 .build();
 
-        log.info("Запрос событий от администратора. Параметрамы запроса: " + params.toString());
+        log.info("Запрос событий от администратора. Параметры запроса: {}", params.toString());
         return adminEventService.getAllByParams(params);
     }
 }

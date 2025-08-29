@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import ru.practicum.explorewithme.error.exception.BadRequestException;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
+import ru.practicum.explorewithme.error.exception.RuleViolationException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -27,16 +29,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ResponseEntity<ApiError> handleDataIntegrityViolationException(final DataIntegrityViolationException ex) {
+    public ResponseEntity<ApiError> handleDataIntegrityViolation(final DataIntegrityViolationException ex) {
         log.warn("409 Conflict: {}", ex.getMessage());
         String stackTrace = getStackTrace(ex);
         String timestamp = getCurrentTimestamp();
         return getResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), "Data conflict", timestamp, stackTrace);
     }
 
+    @ExceptionHandler(RuleViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ApiError> handleRuleViolation(final RuleViolationException ex) {
+        log.warn("409 Conflict: {}", ex.getMessage());
+        String stackTrace = getStackTrace(ex);
+        String timestamp = getCurrentTimestamp();
+        return getResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), "For the requested operation the conditions are not met.", timestamp, stackTrace);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiError> handleInvalidArgument(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiError> handleInvalidArgument(final MethodArgumentNotValidException ex) {
         log.warn("400 {}", ex.getMessage());
 
         String message = Optional
@@ -51,7 +62,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiError> handleArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<ApiError> handleArgumentTypeMismatch(final MethodArgumentTypeMismatchException ex) {
         log.warn("400 {}", ex.getMessage());
 
         String stackTrace = getStackTrace(ex);
@@ -59,9 +70,19 @@ public class GlobalExceptionHandler {
         return getResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), "Argument type mismatch", timestamp, stackTrace);
     }
 
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiError> handleBadRequest(final BadRequestException ex) {
+        log.warn("400 {}", ex.getMessage());
+
+        String stackTrace = getStackTrace(ex);
+        String timestamp = getCurrentTimestamp();
+        return getResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), "Bad request", timestamp, stackTrace);
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ApiError> handleInvalidInput(ConstraintViolationException ex) {
+    public ResponseEntity<ApiError> handleInvalidInput(final ConstraintViolationException ex) {
         log.warn("400 {}", ex.getMessage());
 
         String message = ex.getConstraintViolations().stream()
@@ -76,7 +97,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ApiError> handleNotFoundException(final NotFoundException ex) {
+    public ResponseEntity<ApiError> handleNotFound(final NotFoundException ex) {
         log.warn("404 {}", ex.getMessage());
         String stackTrace = getStackTrace(ex);
         String timestamp = getCurrentTimestamp();
