@@ -13,5 +13,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     List<Event> findByInitiatorIdOrderByEventDateDesc(Long initiatorId);
 
     Optional<Event> findByIdAndState(Long id, State state);
+
+    Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 }
 
