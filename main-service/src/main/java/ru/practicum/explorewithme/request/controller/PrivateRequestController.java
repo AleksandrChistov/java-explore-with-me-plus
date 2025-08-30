@@ -17,8 +17,13 @@ import java.util.List;
 @RequestMapping("/users/{userId}")
 @Validated
 @RequiredArgsConstructor
-public class RequestController {
+public class PrivateRequestController {
     private final RequestService requestService;
+
+    @GetMapping("/requests")
+    public List<RequestDto> getUserRequests(@PathVariable Long userId) {
+        return requestService.getUserRequests(userId);
+    }
 
     @PostMapping("/requests")
     public ResponseEntity<RequestDto> addParticipationRequest(
@@ -52,10 +57,5 @@ public class RequestController {
             @RequestBody @Valid RequestStatusUpdate updateRequest) {
 
         return requestService.updateRequestStatus(userId, eventId, updateRequest);
-    }
-
-    @GetMapping
-    public List<RequestDto> getUserRequests(@PathVariable Long userId) {
-        return requestService.getUserRequests(userId);
     }
 }
