@@ -6,6 +6,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.StatsParams;
+import ru.practicum.StatsView;
+import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
 import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
@@ -22,8 +25,8 @@ import ru.practicum.explorewithme.event.mapper.LocationMapper;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
 import ru.practicum.explorewithme.request.enums.Status;
-
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,14 +41,13 @@ public class AdminEventServiceImpl implements AdminEventService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
-//    private final ViewRepository viewRepository;
+    private final StatsClient statsClient;
 
     @Override
     public EventFullDto update(Long eventId, UpdateEventRequest updateEventRequest) throws RuleViolationException {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с ID " + eventId + " не найдено"));
 
-        // todo: replace with mapstruct
         if (updateEventRequest.getCategory() != null) {
             Category category = categoryRepository.findById(updateEventRequest.getCategory())
                     .orElseThrow(() -> new NotFoundException("Категория с ID" + updateEventRequest.getCategory() + " не найдена"));
@@ -93,9 +95,16 @@ public class AdminEventServiceImpl implements AdminEventService {
 
         eventRepository.save(event);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
-//        Long views = viewRepository.countByEventId(eventId);
+        StatsParams params = new StatsParams();
+        params.setStart(LocalDateTime.MIN);
+        params.setEnd(LocalDateTime.now());
+        params.setUris(Collections.singletonList("/events/" + eventId));
+        params.setUnique(false);
+        Long views = statsClient.getStats(params).stream()
+                .mapToLong(StatsView::getHits)
+                .sum();
         log.info("Администратором обновлено событие c ID {}.", event.getId());
-        return EventMapper.toEventFullDto(event, confirmedRequests, 0L);
+        return EventMapper.toEventFullDto(event, confirmedRequests, views);
     }
 
     @Override
@@ -114,16 +123,22 @@ public class AdminEventServiceImpl implements AdminEventService {
                         r -> (Long) r[0],
                         r -> (Long) r[1]
                 ));
-//        Map<Long, Long> viewsMap = viewRepository.countsByEventIds(eventIds)
-//                .stream()
-//                .collect(Collectors.toMap(
-//                        r -> (Long) r[0],
-//                        r -> (Long) r[1]
-//                ));
+        StatsParams params = new StatsParams();
+        params.setStart(LocalDateTime.MIN);
+        params.setEnd(LocalDateTime.now());
+        params.setUris(eventIds.stream()
+                .map(id -> "/events/" + id)
+                .toList());
+        params.setUnique(false);
+        Map<Long, Long> viewsMap = statsClient.getStats(params)
+                .stream()
+                .collect(Collectors.toMap(
+                        sv -> Long.parseLong(sv.getUri().split("/")[2]),
+                        StatsView::getHits
+                ));
 
         List<EventFullDto> result = events.stream()
-//                .map(e -> EventMapper.toEventFullDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
-                .map(e -> EventMapper.toEventFullDto(e, confirmedRequestsMap.get(e.getId()), 0L))
+                .map(e -> EventMapper.toEventFullDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
                 .toList();
         log.info("Администратором получена информация о {} событиях.", result.size());
         return result;

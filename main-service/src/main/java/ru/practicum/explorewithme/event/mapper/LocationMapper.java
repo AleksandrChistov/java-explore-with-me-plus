@@ -1,5 +1,4 @@
 package ru.practicum.explorewithme.event.mapper;
-
 import ru.practicum.explorewithme.event.dto.LocationDto;
 import ru.practicum.explorewithme.event.model.Location;
 

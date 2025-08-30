@@ -7,6 +7,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsDto;
+import ru.practicum.StatsParams;
+import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.error.exception.BadRequestException;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
@@ -38,7 +40,7 @@ public class PublicEventServiceImpl implements PublicEventService {
     private final StatsClient statClient;
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-//    private final ViewRepository viewRepository;
+    private final StatsClient statsClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -72,14 +74,6 @@ public class PublicEventServiceImpl implements PublicEventService {
                         r -> (Long) r[1]
                 ));
 
-        // todo: why does it need? Is it really correct calculations?
-//        Map<Long, Long> views = viewRepository.countsByEventIds(eventIds)
-//                .stream()
-//                .collect(Collectors.toMap(
-//                        r -> (Long) r[0],
-//                        r -> (Long) r[1]
-//                ));
-
         statClient.hit(StatsDto.builder()
                 .ip(request.getRemoteAddr())
                 .uri(request.getRequestURI())
@@ -88,11 +82,24 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .build());
         log.info("Статистика сохранена.");
 
+        StatsParams statsParams = new StatsParams();
+        statsParams.setStart(LocalDateTime.MIN);
+        statsParams.setEnd(LocalDateTime.now());
+        statsParams.setUris(eventIds.stream()
+                .map(id -> "/events/" + id)
+                .toList());
+        statsParams.setUnique(false);
+        Map<Long, Long> views = statsClient.getStats(statsParams)
+                .stream()
+                .collect(Collectors.toMap(
+                        sv -> Long.parseLong(sv.getUri().split("/")[2]),
+                        StatsView::getHits
+                ));
+
         List<EventShortDto> result = events.stream()
                 .map(event -> EventMapper.toEventShortDto(event,
                         Optional.ofNullable(confirmedRequests.get(event.getId())).orElse(0L),
-//                        Optional.ofNullable(views.get(event.getId())).orElse(0L)))
-                        0L))
+                        Optional.ofNullable(views.get(event.getId())).orElse(0L)))
                 .toList();
         log.info("Метод вернул {} событий.", result.size());
         return result;
@@ -104,17 +111,6 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .orElseThrow(() -> new NotFoundException("Событие не найдено."));
 
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
-//        Long views = viewRepository.countByEventId(eventId);
-
-//        if (!viewRepository.existsByEventIdAndIp(eventId, request.getRemoteAddr())) {
-//            View view = View.builder()
-//                    .event(event)
-//                    .ip(request.getRemoteAddr())
-//                    .build();
-//            viewRepository.save(view);
-//            log.info("Зарегистрирован новый просмотр события с ID={}. IP-адрес: {}", eventId, request.getRemoteAddr());
-//        }
-
         statClient.hit(StatsDto.builder()
                 .ip(request.getRemoteAddr())
                 .uri(request.getRequestURI())
@@ -122,7 +118,16 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .timestamp(LocalDateTime.now())
                 .build());
         log.info("Статистика сохранена.");
-        EventFullDto dto = EventMapper.toEventFullDto(event, confirmedRequests, 0L);
+
+        StatsParams params = new StatsParams();
+        params.setStart(LocalDateTime.MIN);
+        params.setEnd(LocalDateTime.now());
+        params.setUris(Collections.singletonList("/events/" + eventId));
+        params.setUnique(false);
+        Long views = statsClient.getStats(params).stream()
+                .mapToLong(StatsView::getHits)
+                .sum();
+        EventFullDto dto = EventMapper.toEventFullDto(event, confirmedRequests, views);
         log.debug("Получено событие с ID={}: {}", eventId, dto);
         return dto;
     }

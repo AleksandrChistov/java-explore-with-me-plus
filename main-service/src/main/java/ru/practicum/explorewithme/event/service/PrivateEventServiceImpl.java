@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.StatsParams;
+import ru.practicum.StatsView;
+import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
 import ru.practicum.explorewithme.event.dto.*;
@@ -21,6 +24,7 @@ import ru.practicum.explorewithme.user.model.User;
 import ru.practicum.explorewithme.user.dao.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,7 +40,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-//    private final ViewRepository viewRepository;
+    private final StatsClient statsClient;
 
     @Override
     public EventFullDto create(Long userId, NewEventDto newEventDto) {
@@ -122,8 +126,15 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         eventRepository.save(event);
         log.info("Событие с ID {} обновлено пользователем с ID {}.", eventId, userId);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
-//        Long views = viewRepository.countByEventId(eventId);
-        return EventMapper.toEventFullDto(event, confirmedRequests, 0L);
+        StatsParams params = new StatsParams();
+        params.setStart(LocalDateTime.MIN);
+        params.setEnd(LocalDateTime.now());
+        params.setUris(Collections.singletonList("/events/" + eventId));
+        params.setUnique(false);
+        Long views = statsClient.getStats(params).stream()
+                .mapToLong(StatsView::getHits)
+                .sum();
+        return EventMapper.toEventFullDto(event, confirmedRequests, views);
     }
 
     @Override
@@ -139,8 +150,16 @@ public class PrivateEventServiceImpl implements PrivateEventService {
             throw new RuleViolationException("Пользователь с ID " + userId + " не является инициатором события c ID " + eventId);
         }
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
-//        Long views = viewRepository.countByEventId(eventId);
-        return EventMapper.toEventFullDto(event, confirmedRequests, 0L);
+
+        StatsParams params = new StatsParams();
+        params.setStart(LocalDateTime.MIN);
+        params.setEnd(LocalDateTime.now());
+        params.setUris(Collections.singletonList("/events/" + eventId));
+        params.setUnique(false);
+        Long views = statsClient.getStats(params).stream()
+                .mapToLong(StatsView::getHits)
+                .sum();
+        return EventMapper.toEventFullDto(event, confirmedRequests, views);
     }
 
     @Override
@@ -159,16 +178,23 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                         r -> (Long) r[0],
                         r -> (Long) r[1]
                 ));
-//        Map<Long, Long> viewsMap = viewRepository.countsByEventIds(eventIds)
-//                .stream()
-//                .collect(Collectors.toMap(
-//                        r -> (Long) r[0],
-//                        r -> (Long) r[1]
-//                ));
+
+        StatsParams params = new StatsParams();
+        params.setStart(LocalDateTime.MIN);
+        params.setEnd(LocalDateTime.now());
+        params.setUris(eventIds.stream()
+                .map(id -> "/events/" + id)
+                .toList());
+        params.setUnique(false);
+        Map<Long, Long> viewsMap = statsClient.getStats(params)
+                .stream()
+                .collect(Collectors.toMap(
+                        sv -> Long.parseLong(sv.getUri().split("/")[2]),
+                        StatsView::getHits
+                ));
 
         return events.stream()
-//                .map(e -> EventMapper.toEventShortDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
-                .map(e -> EventMapper.toEventShortDto(e, confirmedRequestsMap.get(e.getId()), 0L))
+                .map(e -> EventMapper.toEventShortDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
                 .toList();
     }
 }
