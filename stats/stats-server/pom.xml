@@ -61,15 +61,7 @@
         <dependency>
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
-            <version>1.5.3.Final</version> <!-- Убедитесь, что версия актуальна! -->
-        </dependency>
-
-        <!-- Annotation processor для генерации классов-мапперов -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>1.5.3.Final</version> <!-- Версия должна совпадать с основной зависимостью -->
-            <scope>provided</scope>
+            <version>1.6.3</version>
         </dependency>
     </dependencies>
 
