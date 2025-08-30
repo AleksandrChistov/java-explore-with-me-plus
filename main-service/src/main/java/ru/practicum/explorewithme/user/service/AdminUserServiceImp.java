@@ -8,11 +8,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
+import ru.practicum.explorewithme.user.dao.UserRepository;
 import ru.practicum.explorewithme.user.dto.NewUserRequest;
 import ru.practicum.explorewithme.user.dto.UserDto;
 import ru.practicum.explorewithme.user.mapper.UserMapper;
 import ru.practicum.explorewithme.user.model.User;
-import ru.practicum.explorewithme.user.storage.UserRepository;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class AdminUserServiceImp implements AdminUserService {
 
     @Override
     public UserDto create(NewUserRequest newUserRequest) {
-        log.info("creating user" + newUserRequest);
+        log.info("creating user {}", newUserRequest);
         User user = mapper.toUser(newUserRequest);
         if (user == null) {
             throw new IllegalArgumentException("Incorrect data. User cannot be null.");
