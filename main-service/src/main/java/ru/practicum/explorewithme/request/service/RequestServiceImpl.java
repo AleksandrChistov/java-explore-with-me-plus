@@ -3,6 +3,7 @@ package ru.practicum.explorewithme.request.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.error.exception.ConflictException;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.dao.EventRepository;
@@ -27,12 +28,14 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class RequestServiceImpl implements RequestService{
+@Transactional
+public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final RequestMapper requestMapper;
 
+    @Override
     public RequestDto createRequest(Long userId, Long eventId) {
         log.info("Creating participation request for user {} to event {}", userId, eventId);
 
@@ -66,7 +69,7 @@ public class RequestServiceImpl implements RequestService{
         request.setEvent(event);
         request.setRequester(user);
 
-        if (event.getRequestModeration() != null && !event.getRequestModeration()) {
+        if (event.getParticipantLimit() == 0 || (event.getRequestModeration() != null && !event.getRequestModeration())) {
             request.setStatus(Status.CONFIRMED);
         } else {
             request.setStatus(Status.PENDING);
@@ -94,24 +97,6 @@ public class RequestServiceImpl implements RequestService{
 
         Request cancelledRequest = requestRepository.save(request);
         return requestMapper.toRequestDto(cancelledRequest);
-    }
-
-    @Override
-    public List<RequestDto> getEventRequests(Long userId, Long eventId) {
-        log.info("Getting requests for event {} by user {}", eventId, userId);
-
-        if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User with id=" + userId + " was not found");
-        }
-
-        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
-                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
-
-        List<Request> requests = requestRepository.findByEventId(eventId);
-
-        return requests.stream()
-                .map(requestMapper::toRequestDto)
-                .toList();
     }
 
 
@@ -202,14 +187,27 @@ public class RequestServiceImpl implements RequestService{
         return new RequestStatusUpdateResult(confirmedUpdates, rejectedUpdates);
     }
 
-    private RequestStatusUpdate convertToStatusUpdate(Request request) {
-        RequestStatusUpdate update = new RequestStatusUpdate();
-        update.setRequestIds(List.of(request.getId()));
-        update.setStatus(request.getStatus().toString());
-        return update;
+    @Override
+    @Transactional(readOnly = true)
+    public List<RequestDto> getEventRequests(Long userId, Long eventId) {
+        log.info("Getting requests for event {} by user {}", eventId, userId);
+
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User with id=" + userId + " was not found");
+        }
+
+        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
+                .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
+
+        List<Request> requests = requestRepository.findByEventId(eventId);
+
+        return requests.stream()
+                .map(requestMapper::toRequestDto)
+                .toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<RequestDto> getUserRequests(Long userId) {
         log.info("Getting all requests for user {}", userId);
 
@@ -223,5 +221,14 @@ public class RequestServiceImpl implements RequestService{
                 .map(requestMapper::toRequestDto)
                 .collect(Collectors.toList());
     }
+
+    private RequestStatusUpdate convertToStatusUpdate(Request request) {
+        RequestStatusUpdate update = new RequestStatusUpdate();
+        update.setRequestIds(List.of(request.getId()));
+        update.setStatus(request.getStatus().toString());
+        return update;
+    }
+
+
 }
 

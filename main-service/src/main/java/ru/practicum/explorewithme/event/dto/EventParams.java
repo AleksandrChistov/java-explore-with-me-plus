@@ -18,6 +18,6 @@ public class EventParams {
     LocalDateTime rangeEnd;
     Boolean onlyAvailable;
     EventsSort eventsSort;
-    Long from;
-    Long size;
+    int from;
+    int size;
 }

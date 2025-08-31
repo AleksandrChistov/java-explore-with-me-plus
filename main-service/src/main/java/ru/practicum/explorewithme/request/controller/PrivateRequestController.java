@@ -3,7 +3,6 @@ package ru.practicum.explorewithme.request.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.request.dto.RequestDto;
@@ -26,27 +25,28 @@ public class PrivateRequestController {
     }
 
     @PostMapping("/requests")
-    public ResponseEntity<RequestDto> addParticipationRequest(
+    @ResponseStatus(HttpStatus.CREATED)
+    public RequestDto addParticipationRequest(
             @PathVariable Long userId,
-            @RequestParam Long eventId) {
-
-        RequestDto requestDto = requestService.createRequest(userId, eventId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(requestDto);
+            @RequestParam Long eventId
+    ) {
+        return requestService.createRequest(userId, eventId);
     }
-    @PatchMapping("/requests/{requestId}/cancel")
-    public ResponseEntity<RequestDto> cancelRequest(
-            @PathVariable Long userId,
-            @PathVariable Long requestId) {
 
-        RequestDto cancelledRequest = requestService.cancelRequest(userId, requestId);
-        return ResponseEntity.ok(cancelledRequest);
+    @PatchMapping("/requests/{requestId}/cancel")
+    @ResponseStatus(HttpStatus.OK)
+    public RequestDto cancelRequest(
+            @PathVariable Long userId,
+            @PathVariable Long requestId
+    ) {
+        return requestService.cancelRequest(userId, requestId);
     }
 
     @GetMapping("/events/{eventId}/requests")
     public List<RequestDto> getEventRequests(
             @PathVariable Long userId,
-            @PathVariable Long eventId) {
-
+            @PathVariable Long eventId
+    ) {
         return requestService.getEventRequests(userId, eventId);
     }
 
@@ -54,8 +54,8 @@ public class PrivateRequestController {
     public RequestStatusUpdateResult updateRequestStatus(
             @PathVariable Long userId,
             @PathVariable Long eventId,
-            @RequestBody @Valid RequestStatusUpdate updateRequest) {
-
+            @RequestBody @Valid RequestStatusUpdate updateRequest
+    ) {
         return requestService.updateRequestStatus(userId, eventId, updateRequest);
     }
 }

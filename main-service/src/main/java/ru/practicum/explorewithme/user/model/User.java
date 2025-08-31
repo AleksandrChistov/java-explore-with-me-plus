@@ -3,6 +3,7 @@ package ru.practicum.explorewithme.user.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -18,11 +19,13 @@ public class User {
     private Long id;
 
     @NotBlank
+    @Size(max = 250, min = 2)
     @Column(name = "name", nullable = false)
     private String name;
 
     @Email
     @NotBlank
+    @Size(max = 254, min = 6)
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 

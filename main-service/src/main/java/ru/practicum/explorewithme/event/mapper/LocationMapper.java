@@ -1,22 +1,16 @@
 package ru.practicum.explorewithme.event.mapper;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import ru.practicum.explorewithme.event.dto.LocationDto;
 import ru.practicum.explorewithme.event.model.Location;
 
-public class LocationMapper {
+@Mapper(componentModel = "spring")
+public interface LocationMapper {
 
-    public static Location toEntity(LocationDto dto) {
-        if (dto == null) return null;
-        return Location.builder()
-                .lat(dto.getLat())
-                .lon(dto.getLon())
-                .build();
-    }
+    @Mapping(target = "id", ignore = true)
+    Location toEntity(LocationDto dto);
 
-    public static LocationDto toDto(Location location) {
-        if (location == null) return null;
-        return LocationDto.builder()
-                .lat(location.getLat())
-                .lon(location.getLon())
-                .build();
-    }
+    LocationDto toDto(Location location);
+
 }

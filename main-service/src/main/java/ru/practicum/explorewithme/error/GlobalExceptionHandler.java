@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -45,6 +47,24 @@ public class GlobalExceptionHandler {
         return getResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), "For the requested operation the conditions are not met.", timestamp, stackTrace);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiError> handleHttpMessageNotReadable(final HttpMessageNotReadableException ex) {
+        log.warn("400 {}", ex.getMessage());
+        String stackTrace = getStackTrace(ex);
+        String timestamp = getCurrentTimestamp();
+        return getResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), "Invalid JSON", timestamp, stackTrace);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ApiError> handleMissingServletRequestParameter(final MissingServletRequestParameterException ex) {
+        log.warn("400 {}", ex.getMessage());
+        String stackTrace = getStackTrace(ex);
+        String timestamp = getCurrentTimestamp();
+        return getResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), "Missing parameter", timestamp, stackTrace);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ApiError> handleInvalidArgument(final MethodArgumentNotValidException ex) {
@@ -64,7 +84,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ApiError> handleArgumentTypeMismatch(final MethodArgumentTypeMismatchException ex) {
         log.warn("400 {}", ex.getMessage());
-
         String stackTrace = getStackTrace(ex);
         String timestamp = getCurrentTimestamp();
         return getResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), "Argument type mismatch", timestamp, stackTrace);
@@ -74,7 +93,6 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<ApiError> handleBadRequest(final BadRequestException ex) {
         log.warn("400 {}", ex.getMessage());
-
         String stackTrace = getStackTrace(ex);
         String timestamp = getCurrentTimestamp();
         return getResponseEntity(HttpStatus.BAD_REQUEST, ex.getMessage(), "Bad request", timestamp, stackTrace);
