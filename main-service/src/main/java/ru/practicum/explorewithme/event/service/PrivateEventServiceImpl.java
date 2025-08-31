@@ -1,6 +1,6 @@
 package ru.practicum.explorewithme.event.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -9,22 +9,25 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsParams;
 import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
-import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
+import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.error.exception.BadRequestException;
-import ru.practicum.explorewithme.event.dto.*;
+import ru.practicum.explorewithme.error.exception.NotFoundException;
+import ru.practicum.explorewithme.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.event.dao.EventRepository;
+import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.event.dto.NewEventDto;
+import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.enums.StateAction;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.LocationMapper;
 import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.event.dao.EventRepository;
-import ru.practicum.explorewithme.error.exception.RuleViolationException;
-import ru.practicum.explorewithme.error.exception.NotFoundException;
-import ru.practicum.explorewithme.request.enums.Status;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
-import ru.practicum.explorewithme.user.model.User;
+import ru.practicum.explorewithme.request.enums.Status;
 import ru.practicum.explorewithme.user.dao.UserRepository;
+import ru.practicum.explorewithme.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -36,7 +39,7 @@ import java.util.stream.Collectors;
 import static ru.practicum.explorewithme.consts.ConstantUtil.EPOCH_LOCAL_DATE_TIME;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 @Slf4j
 public class PrivateEventServiceImpl implements PrivateEventService {

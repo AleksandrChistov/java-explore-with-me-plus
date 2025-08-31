@@ -7,8 +7,6 @@ import ru.practicum.explorewithme.user.dto.UserDto;
 import ru.practicum.explorewithme.user.dto.UserShortDto;
 import ru.practicum.explorewithme.user.model.User;
 
-import java.util.List;
-
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
@@ -16,8 +14,6 @@ public interface UserMapper {
     User toUser(NewUserRequest newUserRequest);
 
     UserDto toUserDto(User user);
-
-    List<UserDto> toDtoList(List<User> userList);
 
     UserShortDto toUserShortDto(User user);
 

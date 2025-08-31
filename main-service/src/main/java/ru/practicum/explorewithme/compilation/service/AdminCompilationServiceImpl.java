@@ -25,6 +25,7 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
 
         // todo: get events by ids (batch) - eventRepository.findAllByIdIn(requestCompilationDto.getEvents())
         // newCompilation.setEvents(events) and then save
+        // ViewShort (Long confirmedRequests, Long views)
 
         Compilation saved = compilationRepository.save(newCompilation);
 

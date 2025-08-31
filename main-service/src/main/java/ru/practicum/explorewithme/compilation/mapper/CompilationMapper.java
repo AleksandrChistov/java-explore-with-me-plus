@@ -7,8 +7,11 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.RequestCompilationDto;
 import ru.practicum.explorewithme.compilation.model.Compilation;
+import ru.practicum.explorewithme.event.mapper.EventMapper;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring",
+        uses = {EventMapper.class},
+        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CompilationMapper {
 
     ResponseCompilationDto toCompilationDto(Compilation compilation);

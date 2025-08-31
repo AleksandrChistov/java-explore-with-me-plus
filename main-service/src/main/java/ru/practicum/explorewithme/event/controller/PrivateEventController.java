@@ -2,7 +2,7 @@ package ru.practicum.explorewithme.event.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -17,7 +17,7 @@ import java.util.Collection;
 
 @RestController
 @RequestMapping("/users/{userId}/events")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 @Validated
 public class PrivateEventController {

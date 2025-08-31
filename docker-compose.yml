@@ -5,7 +5,6 @@ services:
     container_name: stats-server
     ports:
       - "9090:9090"
-      - "5005:5005" # порт для отладки
     depends_on:
       - stats-db
     environment:
@@ -35,11 +34,11 @@ services:
       - "8080:8080"
     depends_on:
       - ewm-db
-      - stats-server
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explorewithme
       - SPRING_DATASOURCE_USERNAME=explorewithme
       - SPRING_DATASOURCE_PASSWORD=explorewithme
+      - STATS_SERVER_URL=http://stats-server:9090
 
   ewm-db:
     image: postgres:16.1

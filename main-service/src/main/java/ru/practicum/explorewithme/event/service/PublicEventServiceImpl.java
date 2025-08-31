@@ -39,14 +39,13 @@ import static ru.practicum.explorewithme.consts.ConstantUtil.EPOCH_LOCAL_DATE_TI
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PublicEventServiceImpl implements PublicEventService {
 
     private final StatsClient statClient;
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
-    private final StatsClient statsClient;
     private final EventMapper eventMapper;
 
     @Override
@@ -115,7 +114,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                 .toList());
         statsParams.setUnique(false);
 
-        Map<Long, Long> views = statsClient.getStats(statsParams)
+        Map<Long, Long> views = statClient.getStats(statsParams)
                 .stream()
                 .collect(Collectors.toMap(
                         sv -> Long.parseLong(sv.getUri().split("/")[2]),
@@ -163,7 +162,7 @@ public class PublicEventServiceImpl implements PublicEventService {
         params.setEnd(LocalDateTime.now());
         params.setUris(Collections.singletonList("/events/" + eventId));
         params.setUnique(true);
-        Long views = statsClient.getStats(params).stream()
+        Long views = statClient.getStats(params).stream()
                 .mapToLong(StatsView::getHits)
                 .sum();
         EventFullDto dto = eventMapper.toEventFullDto(event, confirmedRequests, views);
