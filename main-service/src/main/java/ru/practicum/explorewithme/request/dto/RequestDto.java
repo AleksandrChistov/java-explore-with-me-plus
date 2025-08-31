@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestDto {
+    private Long id;
     private LocalDateTime created;
     private Long event;
-    private Long id;
     private Long requester;
     private String status;
 }

@@ -10,7 +10,6 @@ import ru.practicum.explorewithme.model.Stats;
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 @Repository
 public interface StatsRepository extends JpaRepository<Stats, Long> {
 

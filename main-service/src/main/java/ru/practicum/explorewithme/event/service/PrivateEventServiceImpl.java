@@ -1,27 +1,33 @@
 package ru.practicum.explorewithme.event.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsParams;
 import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
-import ru.practicum.explorewithme.category.model.Category;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
-import ru.practicum.explorewithme.event.dto.*;
+import ru.practicum.explorewithme.category.model.Category;
+import ru.practicum.explorewithme.error.exception.BadRequestException;
+import ru.practicum.explorewithme.error.exception.NotFoundException;
+import ru.practicum.explorewithme.error.exception.RuleViolationException;
+import ru.practicum.explorewithme.event.dao.EventRepository;
+import ru.practicum.explorewithme.event.dto.EventFullDto;
+import ru.practicum.explorewithme.event.dto.EventShortDto;
+import ru.practicum.explorewithme.event.dto.NewEventDto;
+import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.enums.StateAction;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.mapper.LocationMapper;
 import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.event.dao.EventRepository;
-import ru.practicum.explorewithme.error.exception.RuleViolationException;
-import ru.practicum.explorewithme.error.exception.NotFoundException;
-import ru.practicum.explorewithme.request.enums.Status;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
-import ru.practicum.explorewithme.user.model.User;
+import ru.practicum.explorewithme.request.enums.Status;
 import ru.practicum.explorewithme.user.dao.UserRepository;
+import ru.practicum.explorewithme.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -30,8 +36,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static ru.practicum.explorewithme.consts.ConstantUtil.EPOCH_LOCAL_DATE_TIME;
+
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 @Slf4j
 public class PrivateEventServiceImpl implements PrivateEventService {
@@ -41,18 +49,24 @@ public class PrivateEventServiceImpl implements PrivateEventService {
     private final EventRepository eventRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
+    private final EventMapper eventMapper;
+    private final LocationMapper locationMapper;
 
     @Override
     public EventFullDto create(Long userId, NewEventDto newEventDto) {
+        if (newEventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+            throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
+        }
+
         User initiator = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден."));
         Category category = categoryRepository.findById(newEventDto.getCategory())
                 .orElseThrow(() -> new NotFoundException("Категория " + newEventDto.getCategory() + " не найдена."));
 
-        Event newEvent = EventMapper.toEvent(newEventDto, initiator, category);
+        Event newEvent = eventMapper.toEvent(newEventDto, initiator, category);
         eventRepository.save(newEvent);
         log.info("Событие c ID {} создано пользователем с ID {}.", newEvent.getId(), userId);
-        return EventMapper.toEventFullDto(newEvent, 0L, 0L);
+        return eventMapper.toEventFullDto(newEvent, 0L, 0L);
     }
 
     @Override
@@ -75,7 +89,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         if (updateEventRequest.getEventDate() != null &&
                 updateEventRequest.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             log.error("Ошибка в дате события с ID {}: новая дата ранее двух часов от текущего момента", eventId);
-            throw new RuleViolationException("Дата и время на которые намечено событие не может быть раньше, чем через два " +
+            throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, чем через два " +
                     "часа от текущего момента");
         }
 
@@ -98,7 +112,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         }
 
         if (updateEventRequest.getLocation() != null) {
-            event.setLocation(LocationMapper.toEntity(updateEventRequest.getLocation()));
+            event.setLocation(locationMapper.toEntity(updateEventRequest.getLocation()));
         }
 
         if (updateEventRequest.getPaid() != null) {
@@ -127,14 +141,14 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         log.info("Событие с ID {} обновлено пользователем с ID {}.", eventId, userId);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
         StatsParams params = new StatsParams();
-        params.setStart(LocalDateTime.MIN);
+        params.setStart(EPOCH_LOCAL_DATE_TIME);
         params.setEnd(LocalDateTime.now());
         params.setUris(Collections.singletonList("/events/" + eventId));
         params.setUnique(false);
         Long views = statsClient.getStats(params).stream()
                 .mapToLong(StatsView::getHits)
                 .sum();
-        return EventMapper.toEventFullDto(event, confirmedRequests, views);
+        return eventMapper.toEventFullDto(event, confirmedRequests, views);
     }
 
     @Override
@@ -152,25 +166,27 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
 
         StatsParams params = new StatsParams();
-        params.setStart(LocalDateTime.MIN);
+        params.setStart(EPOCH_LOCAL_DATE_TIME);
         params.setEnd(LocalDateTime.now());
         params.setUris(Collections.singletonList("/events/" + eventId));
         params.setUnique(false);
         Long views = statsClient.getStats(params).stream()
                 .mapToLong(StatsView::getHits)
                 .sum();
-        return EventMapper.toEventFullDto(event, confirmedRequests, views);
+        return eventMapper.toEventFullDto(event, confirmedRequests, views);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<EventShortDto> getAll(Long userId, Long from, Long size) {
+    public List<EventShortDto> getAll(Long userId, int from, int size) {
         log.info("Поиск пользователя с ID {}.", userId);
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("Пользователь не найден");
         }
 
-        List<Event> events = eventRepository.findByInitiatorIdOrderByEventDateDesc(userId);
+        Pageable pageable = PageRequest.of(from / size, size);
+        List<Event> events = eventRepository.findByInitiatorIdOrderByEventDateDesc(userId, pageable).stream().toList();
+
         List<Long> eventIds = events.stream().map(Event::getId).toList();
         Map<Long, Long> confirmedRequestsMap = requestRepository.getConfirmedRequestsByEventIds(eventIds)
                 .stream()
@@ -180,7 +196,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                 ));
 
         StatsParams params = new StatsParams();
-        params.setStart(LocalDateTime.MIN);
+        params.setStart(EPOCH_LOCAL_DATE_TIME);
         params.setEnd(LocalDateTime.now());
         params.setUris(eventIds.stream()
                 .map(id -> "/events/" + id)
@@ -194,7 +210,7 @@ public class PrivateEventServiceImpl implements PrivateEventService {
                 ));
 
         return events.stream()
-                .map(e -> EventMapper.toEventShortDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
+                .map(e -> eventMapper.toEventShortDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
                 .toList();
     }
 }

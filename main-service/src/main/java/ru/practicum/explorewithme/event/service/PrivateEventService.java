@@ -15,6 +15,6 @@ public interface PrivateEventService {
 
     EventFullDto getById(Long userId, Long eventId);
 
-    List<EventShortDto> getAll(Long userId, Long from, Long size);
+    List<EventShortDto> getAll(Long userId, int from, int size);
 
 }

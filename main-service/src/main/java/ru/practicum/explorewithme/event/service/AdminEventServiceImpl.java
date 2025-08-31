@@ -1,6 +1,6 @@
 package ru.practicum.explorewithme.event.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +11,7 @@ import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
 import ru.practicum.explorewithme.category.model.Category;
+import ru.practicum.explorewithme.error.exception.BadRequestException;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.event.dao.EventRepository;
@@ -25,6 +26,7 @@ import ru.practicum.explorewithme.event.mapper.LocationMapper;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
 import ru.practicum.explorewithme.request.enums.Status;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -32,8 +34,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static ru.practicum.explorewithme.consts.ConstantUtil.EPOCH_LOCAL_DATE_TIME;
+
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional
 @Slf4j
 public class AdminEventServiceImpl implements AdminEventService {
@@ -42,6 +46,8 @@ public class AdminEventServiceImpl implements AdminEventService {
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
+    private final EventMapper eventMapper;
+    private final LocationMapper locationMapper;
 
     @Override
     public EventFullDto update(Long eventId, UpdateEventRequest updateEventRequest) throws RuleViolationException {
@@ -63,7 +69,7 @@ public class AdminEventServiceImpl implements AdminEventService {
             event.setDescription(updateEventRequest.getDescription());
         }
         if (updateEventRequest.getLocation() != null) {
-            event.setLocation(LocationMapper.toEntity(updateEventRequest.getLocation()));
+            event.setLocation(locationMapper.toEntity(updateEventRequest.getLocation()));
         }
         if (updateEventRequest.getPaid() != null) {
             event.setPaid(updateEventRequest.getPaid());
@@ -75,17 +81,21 @@ public class AdminEventServiceImpl implements AdminEventService {
             event.setRequestModeration(updateEventRequest.getRequestModeration());
         }
         if (updateEventRequest.getEventDate() != null) {
+            if (LocalDateTime.now().plusHours(1).isAfter(updateEventRequest.getEventDate())) {
+                throw new BadRequestException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
+            }
             event.setEventDate(updateEventRequest.getEventDate());
         }
+
         if (Objects.equals(updateEventRequest.getStateAction(), StateAction.REJECT_EVENT.name())) {
             if (Objects.equals(event.getState(), State.PUBLISHED)) {
                 throw new RuleViolationException("Событие нельзя отклонить, если оно опубликовано (PUBLISHED)");
             }
             event.setState(State.CANCELED);
         } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT.name())) {
-            if (LocalDateTime.now().plusHours(1).isAfter(event.getEventDate())) {
-                throw new RuleViolationException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
-            }
+//            if (LocalDateTime.now().plusHours(1).isAfter(event.getEventDate())) {
+//                throw new RuleViolationException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
+//            }
             if (!Objects.equals(event.getState(), State.PENDING)) {
                 throw new RuleViolationException("Событие должно находиться в статусе PENDING");
             }
@@ -96,7 +106,7 @@ public class AdminEventServiceImpl implements AdminEventService {
         eventRepository.save(event);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
         StatsParams params = new StatsParams();
-        params.setStart(LocalDateTime.MIN);
+        params.setStart(EPOCH_LOCAL_DATE_TIME);
         params.setEnd(LocalDateTime.now());
         params.setUris(Collections.singletonList("/events/" + eventId));
         params.setUnique(false);
@@ -104,7 +114,7 @@ public class AdminEventServiceImpl implements AdminEventService {
                 .mapToLong(StatsView::getHits)
                 .sum();
         log.info("Администратором обновлено событие c ID {}.", event.getId());
-        return EventMapper.toEventFullDto(event, confirmedRequests, views);
+        return eventMapper.toEventFullDto(event, confirmedRequests, views);
     }
 
     @Override
@@ -124,7 +134,7 @@ public class AdminEventServiceImpl implements AdminEventService {
                         r -> (Long) r[1]
                 ));
         StatsParams params = new StatsParams();
-        params.setStart(LocalDateTime.MIN);
+        params.setStart(EPOCH_LOCAL_DATE_TIME);
         params.setEnd(LocalDateTime.now());
         params.setUris(eventIds.stream()
                 .map(id -> "/events/" + id)
@@ -138,7 +148,7 @@ public class AdminEventServiceImpl implements AdminEventService {
                 ));
 
         List<EventFullDto> result = events.stream()
-                .map(e -> EventMapper.toEventFullDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
+                .map(e -> eventMapper.toEventFullDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))
                 .toList();
         log.info("Администратором получена информация о {} событиях.", result.size());
         return result;

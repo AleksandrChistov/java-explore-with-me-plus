@@ -1,11 +1,11 @@
 package ru.practicum.explorewithme.event.controller;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.event.dto.AdminEventDto;
@@ -30,7 +30,7 @@ public class AdminEventController {
     @PatchMapping("/{eventId}")
     public EventFullDto update(
             @PathVariable Long eventId,
-            @RequestBody @Valid UpdateEventRequest updateEventRequest
+            @Valid @RequestBody UpdateEventRequest updateEventRequest
     ) {
         log.info("Обновление администратором события с ID {}. Новые данные: {}", eventId, updateEventRequest.toString());
         return adminEventService.update(eventId, updateEventRequest);
@@ -41,8 +41,8 @@ public class AdminEventController {
             @RequestParam(required = false) List<Long> users,
             @RequestParam(required = false) List<State> states,
             @RequestParam(required = false) List<Long> categories,
-            @RequestParam(required = false) @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
-            @RequestParam(required = false) @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "0") @PositiveOrZero Long from,
             @RequestParam(defaultValue = "10") @Positive Long size
     ) {

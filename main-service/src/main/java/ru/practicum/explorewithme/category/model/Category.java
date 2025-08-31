@@ -2,6 +2,7 @@ package ru.practicum.explorewithme.category.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -17,6 +18,7 @@ public class Category {
     private Long id;
 
     @NotBlank
+    @Size(max = 50)
     @Column(name = "name", nullable = false, unique = true)
     private String name;
 

@@ -24,10 +24,10 @@ public class StatsClientImpl implements StatsClient {
     private final ObjectMapper objectMapper;
     private final String serverUrl;
 
-    public StatsClientImpl(@Value("${client.url:http://localhost:9090}") String serverUrl) {
+    public StatsClientImpl(@Value("${stats.server.url:http://localhost:9090}") String serverUrl, ObjectMapper objectMapper) {
         this.serverUrl = serverUrl;
         this.httpClient = HttpClient.newHttpClient();
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
     @Override

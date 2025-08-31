@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.user.dao.UserRepository;
 import ru.practicum.explorewithme.user.dto.NewUserRequest;
@@ -19,6 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class AdminUserServiceImp implements AdminUserService {
 
     private final UserRepository repository;
@@ -34,6 +36,17 @@ public class AdminUserServiceImp implements AdminUserService {
         return mapper.toUserDto(repository.save(user));
     }
 
+    @Override
+    public void delete(Long userId) {
+        log.info("Deleting user with id: {}", userId);
+        if (!repository.existsById(userId)) {
+            throw new NotFoundException("user with id " + userId + " not found");
+        }
+        repository.deleteById(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
         log.info("Getting users with ids: {}, from: {}, size: {}", ids, from, size);
 
@@ -50,15 +63,6 @@ public class AdminUserServiceImp implements AdminUserService {
         return usersPage
                 .map(mapper::toUserDto)
                 .toList();
-    }
-
-    @Override
-    public void delete(Long userId) {
-        log.info("Deleting user with id: {}", userId);
-        if (!repository.existsById(userId)) {
-            throw new NotFoundException("user with id " + userId + " not found");
-        }
-        repository.deleteById(userId);
     }
 
 }

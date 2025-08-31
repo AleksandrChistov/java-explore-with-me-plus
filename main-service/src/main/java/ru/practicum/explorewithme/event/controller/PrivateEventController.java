@@ -2,7 +2,7 @@ package ru.practicum.explorewithme.event.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -17,7 +17,7 @@ import java.util.Collection;
 
 @RestController
 @RequestMapping("/users/{userId}/events")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 @Validated
 public class PrivateEventController {
@@ -30,7 +30,7 @@ public class PrivateEventController {
             @PathVariable @Positive Long userId,
             @Valid @RequestBody NewEventDto newEventDto
     ) {
-        log.info("Создание события пользователем с ID " + userId);
+        log.info("Создание события пользователем с ID {} и данными {}", userId, newEventDto);
         return privateEventService.create(userId, newEventDto);
     }
 
@@ -40,16 +40,15 @@ public class PrivateEventController {
             @PathVariable @Positive Long eventId,
             @Valid @RequestBody UpdateEventRequest updateEventRequest
     ) {
-        log.info("Обновление пользователем c ID " + userId + " события c ID " + eventId + ".Новые данные: "
-                + updateEventRequest.toString());
+        log.info("Обновление пользователем c ID {} события c ID {}. Новые данные: {}", userId, eventId, updateEventRequest);
         return privateEventService.update(userId, eventId, updateEventRequest);
     }
 
     @GetMapping
     public Collection<EventShortDto> getAll(
             @PathVariable @Positive Long userId,
-            @RequestParam(defaultValue = "0") Long from,
-            @RequestParam(defaultValue = "10") Long size
+            @RequestParam(defaultValue = "0") int from,
+            @RequestParam(defaultValue = "10") int size
     ) {
         log.info("Получение списка событий созданных пользователем с ID {}", userId);
         return privateEventService.getAll(userId, from, size);
