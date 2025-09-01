@@ -7,8 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.explorewithme.compilation.dto.CreateCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
-import ru.practicum.explorewithme.compilation.dto.RequestCompilationDto;
+import ru.practicum.explorewithme.compilation.dto.UpdateCompilationDto;
 import ru.practicum.explorewithme.compilation.service.AdminCompilationService;
 
 @RestController
@@ -23,14 +24,14 @@ public class AdminCompilationController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseCompilationDto create(@Valid @RequestBody RequestCompilationDto compilationDto) {
+    public ResponseCompilationDto create(@Valid @RequestBody CreateCompilationDto compilationDto) {
         return adminCompilationService.save(compilationDto);
     }
 
     @PatchMapping("/{compId}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseCompilationDto update(
-            @Valid @RequestBody RequestCompilationDto compilationDto,
+            @Valid @RequestBody UpdateCompilationDto compilationDto,
             @Positive @PathVariable Long compId
     ) {
         return adminCompilationService.update(compId, compilationDto);
