@@ -21,8 +21,7 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(name = "created", nullable = false, columnDefinition = "TIMESTAMP(3)")
+    @Column(name = "created", insertable = false, updatable = false)
     private LocalDateTime created;
 
     @NotNull

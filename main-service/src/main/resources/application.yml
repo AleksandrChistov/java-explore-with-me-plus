@@ -24,3 +24,5 @@ logging.level.org.springframework:
     jpa.JpaTransactionManager: DEBUG
   transaction: INFO
   transaction.interceptor: DEBUG
+
+logging.level.ru.practicum.explorewithme: TRACE

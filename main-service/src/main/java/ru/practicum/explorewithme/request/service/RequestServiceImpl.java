@@ -1,5 +1,6 @@
 package ru.practicum.explorewithme.request.service;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,6 @@ import ru.practicum.explorewithme.request.model.Request;
 import ru.practicum.explorewithme.user.dao.UserRepository;
 import ru.practicum.explorewithme.user.model.User;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,11 +33,10 @@ public class RequestServiceImpl implements RequestService {
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
     private final RequestMapper requestMapper;
+    private final EntityManager em;
 
     @Override
     public RequestDto createRequest(Long userId, Long eventId) {
-        LocalDateTime now = LocalDateTime.now();
-
         log.info("Creating participation request for user {} to event {}", userId, eventId);
 
         User user = userRepository.findById(userId)
@@ -66,7 +65,6 @@ public class RequestServiceImpl implements RequestService {
         }
 
         Request request = new Request();
-        request.setCreated(now);
         request.setEvent(event);
         request.setRequester(user);
 
@@ -77,6 +75,11 @@ public class RequestServiceImpl implements RequestService {
         }
 
         Request savedRequest = requestRepository.save(request);
+
+        // Явно перезагружаем из БД чтобы получить created
+        em.flush();
+        em.refresh(savedRequest);
+
         return requestMapper.toRequestDto(savedRequest);
     }
 
