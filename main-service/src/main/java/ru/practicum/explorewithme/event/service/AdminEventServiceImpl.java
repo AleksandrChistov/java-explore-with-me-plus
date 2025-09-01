@@ -93,9 +93,6 @@ public class AdminEventServiceImpl implements AdminEventService {
             }
             event.setState(State.CANCELED);
         } else if (Objects.equals(updateEventRequest.getStateAction(), StateAction.PUBLISH_EVENT.name())) {
-//            if (LocalDateTime.now().plusHours(1).isAfter(event.getEventDate())) {
-//                throw new RuleViolationException("Дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
-//            }
             if (!Objects.equals(event.getState(), State.PENDING)) {
                 throw new RuleViolationException("Событие должно находиться в статусе PENDING");
             }

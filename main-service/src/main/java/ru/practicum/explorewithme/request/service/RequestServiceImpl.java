@@ -36,6 +36,8 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDto createRequest(Long userId, Long eventId) {
+        LocalDateTime now = LocalDateTime.now();
+
         log.info("Creating participation request for user {} to event {}", userId, eventId);
 
         User user = userRepository.findById(userId)
@@ -64,7 +66,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         Request request = new Request();
-        request.setCreated(LocalDateTime.now());
+        request.setCreated(now);
         request.setEvent(event);
         request.setRequester(user);
 
@@ -81,7 +83,6 @@ public class RequestServiceImpl implements RequestService {
     @Override
     public RequestDto cancelRequest(Long userId, Long requestId) {
         log.info("Cancelling request {} for user {}", requestId, userId);
-
 
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException("User with id=" + userId + " was not found");
