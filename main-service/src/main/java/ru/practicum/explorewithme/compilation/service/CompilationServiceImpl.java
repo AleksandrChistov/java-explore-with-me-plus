@@ -64,38 +64,13 @@ public class CompilationServiceImpl implements CompilationService {
 
         List<Long> eventIds = events.stream().map(Event::getId).toList();
 
-        // Event.id, count
-        Map<Long, Long> confirmedRequests = requestRepository.getConfirmedRequestsByEventIds(eventIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        r -> (Long) r[0],
-                        r -> (Long) r[1]
-                ));
-
-        StatsParams statsParams = new StatsParams();
-        statsParams.setStart(EPOCH_LOCAL_DATE_TIME);
-        statsParams.setEnd(LocalDateTime.now());
-        statsParams.setUris(eventIds.stream()
-                .map(id -> "/events/" + id)
-                .toList());
-        statsParams.setUnique(false);
-
-        // Event.id, count
-        Map<Long, Long> views = statClient.getStats(statsParams)
-                .stream()
-                .collect(Collectors.toMap(
-                        sv -> Long.parseLong(sv.getUri().split("/")[2]),
-                        StatsView::getHits
-                ));
-
         return compilations.stream()
                 .map(c -> {
-                    Set<EventShortDto> compilationEventDtos = c.getEvents().stream()
-                            .map(event -> eventMapper.toEventShortDto(event,
-                                    Optional.ofNullable(confirmedRequests.get(event.getId())).orElse(0L),
-                                    Optional.ofNullable(views.get(event.getId())).orElse(0L)))
-                            .collect(Collectors.toSet());
-
+                    Set<EventShortDto> compilationEventDtos = getEventShortDtos(
+                            c.getEvents(),
+                            getConfirmedRequests(eventIds),
+                            getViews(eventIds)
+                    );
                     return compilationMapper.toCompilationDto(c, compilationEventDtos);
                 })
                 .toList();
@@ -112,13 +87,25 @@ public class CompilationServiceImpl implements CompilationService {
 
         List<Long> eventIds = compilation.getEvents().stream().map(Event::getId).toList();
 
-        Map<Long, Long> confirmedRequests = requestRepository.getConfirmedRequestsByEventIds(eventIds)
+        Set<EventShortDto> eventShortDtos = getEventShortDtos(
+                compilation.getEvents(),
+                getConfirmedRequests(eventIds),
+                getViews(eventIds)
+        );
+
+        return compilationMapper.toCompilationDto(compilation, eventShortDtos);
+    }
+
+    private Map<Long, Long> getConfirmedRequests(List<Long> eventIds) {
+        return requestRepository.getConfirmedRequestsByEventIds(eventIds)
                 .stream()
                 .collect(Collectors.toMap(
                         r -> (Long) r[0],
                         r -> (Long) r[1]
                 ));
+    }
 
+    private Map<Long, Long> getViews(List<Long> eventIds) {
         StatsParams statsParams = new StatsParams();
         statsParams.setStart(EPOCH_LOCAL_DATE_TIME);
         statsParams.setEnd(LocalDateTime.now());
@@ -127,19 +114,20 @@ public class CompilationServiceImpl implements CompilationService {
                 .toList());
         statsParams.setUnique(false);
 
-        Map<Long, Long> views = statClient.getStats(statsParams)
+        return statClient.getStats(statsParams)
                 .stream()
                 .collect(Collectors.toMap(
                         sv -> Long.parseLong(sv.getUri().split("/")[2]),
                         StatsView::getHits
                 ));
+    }
 
-        Set<EventShortDto> eventShortDtos = compilation.getEvents().stream()
+    private Set<EventShortDto> getEventShortDtos(Set<Event> events, Map<Long, Long> confirmedRequests, Map<Long, Long> views) {
+        return events.stream()
                 .map(event -> eventMapper.toEventShortDto(event,
                         Optional.ofNullable(confirmedRequests.get(event.getId())).orElse(0L),
                         Optional.ofNullable(views.get(event.getId())).orElse(0L)))
                 .collect(Collectors.toSet());
-
-        return compilationMapper.toCompilationDto(compilation, eventShortDtos);
     }
+
 }

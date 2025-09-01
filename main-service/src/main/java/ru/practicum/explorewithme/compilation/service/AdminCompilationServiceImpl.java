@@ -52,37 +52,7 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
 
         Compilation saved = compilationRepository.save(newCompilation);
 
-        List<Long> eventIds = events.stream().map(Event::getId).toList();
-
-        Map<Long, Long> confirmedRequests = requestRepository.getConfirmedRequestsByEventIds(eventIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        r -> (Long) r[0],
-                        r -> (Long) r[1]
-                ));
-
-        StatsParams statsParams = new StatsParams();
-        statsParams.setStart(EPOCH_LOCAL_DATE_TIME);
-        statsParams.setEnd(LocalDateTime.now());
-        statsParams.setUris(eventIds.stream()
-                .map(id -> "/events/" + id)
-                .toList());
-        statsParams.setUnique(false);
-
-        Map<Long, Long> views = statClient.getStats(statsParams)
-                .stream()
-                .collect(Collectors.toMap(
-                        sv -> Long.parseLong(sv.getUri().split("/")[2]),
-                        StatsView::getHits
-                ));
-
-        Set<EventShortDto> eventShortDtos = events.stream()
-                .map(event -> eventMapper.toEventShortDto(event,
-                        Optional.ofNullable(confirmedRequests.get(event.getId())).orElse(0L),
-                        Optional.ofNullable(views.get(event.getId())).orElse(0L)))
-                .collect(Collectors.toSet());
-
-        return compilationMapper.toCompilationDto(saved, eventShortDtos);
+        return compilationMapper.toCompilationDto(saved, getEventShortDtos(events));
     }
 
     @Override
@@ -103,6 +73,19 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
 
         Compilation updated = compilationRepository.save(fromDb);
 
+        return compilationMapper.toCompilationDto(updated, getEventShortDtos(events));
+    }
+
+    @Override
+    public void delete(long compId) {
+        if (!compilationRepository.existsById(compId)) {
+            throw new NotFoundException("Compilation with id=" + compId + " was not found");
+        }
+
+        compilationRepository.deleteById(compId);
+    }
+
+    private Set<EventShortDto> getEventShortDtos(Set<Event> events) {
         List<Long> eventIds = events.stream().map(Event::getId).toList();
 
         Map<Long, Long> confirmedRequests = requestRepository.getConfirmedRequestsByEventIds(eventIds)
@@ -127,21 +110,11 @@ public class AdminCompilationServiceImpl implements AdminCompilationService {
                         StatsView::getHits
                 ));
 
-        Set<EventShortDto> eventShortDtos = events.stream()
+        return events.stream()
                 .map(event -> eventMapper.toEventShortDto(event,
                         Optional.ofNullable(confirmedRequests.get(event.getId())).orElse(0L),
                         Optional.ofNullable(views.get(event.getId())).orElse(0L)))
                 .collect(Collectors.toSet());
-
-        return compilationMapper.toCompilationDto(updated, eventShortDtos);
     }
 
-    @Override
-    public void delete(long compId) {
-        if (!compilationRepository.existsById(compId)) {
-            throw new NotFoundException("Compilation with id=" + compId + " was not found");
-        }
-
-        compilationRepository.deleteById(compId);
-    }
 }
