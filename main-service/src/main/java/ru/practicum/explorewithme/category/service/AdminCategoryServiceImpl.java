@@ -45,11 +45,6 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         if (!categoryRepository.existsById(catId)) {
             throw new NotFoundException("Category with id=" + catId + " was not found");
         }
-
-        // todo: с категорией не должно быть связано ни одного события
-        // /admin/events?categories=1&size=1
-        // throw 409 with The category is not empty
-
         categoryRepository.deleteById(catId);
     }
 }

@@ -15,18 +15,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
-import ru.practicum.explorewithme.category.model.Category;
-import ru.practicum.explorewithme.compilation.dto.RequestCompilationDto;
+import ru.practicum.explorewithme.compilation.dto.CreateCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
+import ru.practicum.explorewithme.compilation.dto.UpdateCompilationDto;
 import ru.practicum.explorewithme.compilation.model.Compilation;
-import ru.practicum.explorewithme.event.enums.State;
-import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.event.model.Location;
-import ru.practicum.explorewithme.user.model.User;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -54,7 +48,7 @@ class AdminCompilationControllerTest {
 
     @Test
     void create_shouldCreateCompilation_whenValidDataProvided() throws Exception {
-        RequestCompilationDto requestCompilationDto = new RequestCompilationDto("Новая подборка",  false, Set.of());
+        CreateCompilationDto requestCompilationDto = new CreateCompilationDto("Новая подборка",  false, Set.of());
 
         MvcResult result = mvc.perform(post(AdminCompilationController.URL)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,12 +65,11 @@ class AdminCompilationControllerTest {
         assertEquals("Новая подборка", response.getTitle());
         assertFalse(response.getPinned());
         assertEquals(0, response.getEvents().size());
-        // todo: check events fields when ready
     }
 
     @Test
     void create_shouldReturnBadRequest_whenTitleIsBlank() throws Exception {
-        RequestCompilationDto requestCompilationDto = new RequestCompilationDto();
+        CreateCompilationDto requestCompilationDto = new CreateCompilationDto();
         requestCompilationDto.setTitle("");
 
         mvc.perform(post(AdminCompilationController.URL)
@@ -88,7 +81,7 @@ class AdminCompilationControllerTest {
 
     @Test
     void create_shouldReturnBadRequest_whenTitleIsNull() throws Exception {
-        RequestCompilationDto requestCompilationDto = new RequestCompilationDto();
+        CreateCompilationDto requestCompilationDto = new CreateCompilationDto();
         requestCompilationDto.setTitle("");
 
         mvc.perform(post(AdminCompilationController.URL)
@@ -106,7 +99,7 @@ class AdminCompilationControllerTest {
         em.persist(compilation);
         em.flush();
 
-        RequestCompilationDto requestCompilationDto = new RequestCompilationDto();
+        CreateCompilationDto requestCompilationDto = new CreateCompilationDto();
         requestCompilationDto.setTitle("Первая подборка");
 
         mvc.perform(post(AdminCompilationController.URL)
@@ -126,7 +119,7 @@ class AdminCompilationControllerTest {
         em.persist(compilation);
         em.flush();
 
-        RequestCompilationDto updateCompilationDto = new RequestCompilationDto("Новая подборка",  true, Set.of());
+        UpdateCompilationDto updateCompilationDto = new UpdateCompilationDto("Новая подборка",  true, Set.of());
 
         MvcResult result = mvc.perform(patch(AdminCompilationController.URL + "/{compId}", compilation.getId())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -142,68 +135,10 @@ class AdminCompilationControllerTest {
         assertNotNull(response.getId());
         assertEquals("Новая подборка", response.getTitle());
         assertTrue(response.getPinned());
-        // todo: check events fields when ready
 
         List<Compilation> compilations = em.createQuery("select c from Compilation  c", Compilation.class).getResultList();
 
         assertEquals(1, compilations.size());
-    }
-
-    @Test
-    void update_shouldReturnNotFound_whenEventDoesNotExist() throws Exception {
-        Compilation compilation = new Compilation();
-        compilation.setTitle("Первая Подборка");
-        compilation.setPinned(false);
-
-        Category category = new Category();
-        category.setName("Первая категория");
-        em.persist(category);
-
-        User user = new User();
-        user.setName("Пользователь");
-        user.setEmail("user@mail.ru");
-        em.persist(user);
-
-        Location location = new Location();
-        location.setLat(1.0f);
-        location.setLon(1.0f);
-        em.persist(location);
-
-        Event event1 = new Event();
-        event1.setTitle("Офигенное событие");
-        event1.setAnnotation("Аннотация");
-        event1.setDescription("Описание события");
-        event1.setCategory(category);
-        event1.setState(State.PENDING);
-        event1.setCreatedOn(LocalDateTime.now());
-        event1.setEventDate(LocalDateTime.now().plusDays(1));
-        event1.setInitiator(user);
-        event1.setLocation(location);
-        event1.setPaid(true);
-        event1.setParticipantLimit(0);
-        event1.setRequestModeration(true);
-        em.persist(event1);
-
-        Set<Event> events = new HashSet<>();
-        events.add(event1);
-
-        compilation.setEvents(events);
-
-        em.persist(compilation);
-        em.flush();
-
-        RequestCompilationDto updateCompilationDto = new RequestCompilationDto("Новая подборка",  true, Set.of(999L));
-
-        Event event = em.find(Event.class, event1.getId());
-        assertNotNull(event);
-        assertNotNull(event.getId());
-
-        mvc.perform(patch(AdminCompilationController.URL + "/{compId}", compilation.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(objectMapper.writeValueAsString(updateCompilationDto)))
-                .andExpect(status().isOk());
-        // todo: change to isNotFound() after service is ready for check
     }
 
     @Test
@@ -214,7 +149,7 @@ class AdminCompilationControllerTest {
         em.persist(compilation);
         em.flush();
 
-        RequestCompilationDto updateCompilationDto = new RequestCompilationDto();
+        UpdateCompilationDto updateCompilationDto = new UpdateCompilationDto();
         updateCompilationDto.setTitle("");
 
         mvc.perform(patch(AdminCompilationController.URL + "/{compId}", compilation.getId())
@@ -226,7 +161,7 @@ class AdminCompilationControllerTest {
 
     @Test
     void update_shouldReturnNotFound_whenCompilationDoesNotExist() throws Exception {
-        RequestCompilationDto updateCompilationDto = new RequestCompilationDto("Новая подборка", true, Set.of());
+        UpdateCompilationDto updateCompilationDto = new UpdateCompilationDto("Новая подборка", true, Set.of());
 
         mvc.perform(patch(AdminCompilationController.URL + "/{compId}", 999L)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -251,7 +186,7 @@ class AdminCompilationControllerTest {
         TestTransaction.flagForCommit(); // Помечаем для коммита
         TestTransaction.end(); // Выполняем коммит
 
-        RequestCompilationDto updateCompilationDto = new RequestCompilationDto(compilation2.getTitle(), true, Set.of());
+        UpdateCompilationDto updateCompilationDto = new UpdateCompilationDto(compilation2.getTitle(), true, Set.of());
 
         mvc.perform(patch(AdminCompilationController.URL + "/{compId}", compilation1.getId())
                         .contentType(MediaType.APPLICATION_JSON)

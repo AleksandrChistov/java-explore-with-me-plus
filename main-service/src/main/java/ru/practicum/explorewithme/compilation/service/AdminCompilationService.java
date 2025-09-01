@@ -1,13 +1,14 @@
 package ru.practicum.explorewithme.compilation.service;
 
+import ru.practicum.explorewithme.compilation.dto.CreateCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
-import ru.practicum.explorewithme.compilation.dto.RequestCompilationDto;
+import ru.practicum.explorewithme.compilation.dto.UpdateCompilationDto;
 
 public interface AdminCompilationService {
 
-    ResponseCompilationDto save(RequestCompilationDto requestCompilationDto);
+    ResponseCompilationDto save(CreateCompilationDto requestCompilationDto);
 
-    ResponseCompilationDto update(long compId, RequestCompilationDto requestCompilationDto);
+    ResponseCompilationDto update(long compId, UpdateCompilationDto updateCompilationDto);
 
     void delete(long compId);
 
