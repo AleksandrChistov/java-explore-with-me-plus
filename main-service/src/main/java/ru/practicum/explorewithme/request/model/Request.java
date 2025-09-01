@@ -22,7 +22,7 @@ public class Request {
     private Long id;
 
     @NotNull
-    @Column(name = "created", nullable = false)
+    @Column(name = "created", nullable = false, columnDefinition = "TIMESTAMP(3)")
     private LocalDateTime created;
 
     @NotNull
