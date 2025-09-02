@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS comments (
     author_id BIGINT NOT NULL REFERENCES users(id),
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated TIMESTAMP WITHOUT TIME ZONE,
-    status VARCHAR(20) NOT NULL,
+    status VARCHAR(20) NOT NULL
 );
 
 -- Indexes for better query performance
