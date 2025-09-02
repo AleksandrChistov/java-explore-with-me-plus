@@ -42,7 +42,7 @@ public class AdminCommentServiceImpl implements AdminCommentService {
         if (status == null) {
             comments = commentRepository.findAll(pageable);
         } else {
-            comments = commentRepository.finsAllByStatus(status, pageable);
+            comments = commentRepository.findAllByStatus(status, pageable);
         }
 
         log.debug("Found {} comments", comments.getTotalElements());

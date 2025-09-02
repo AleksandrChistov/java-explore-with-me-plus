@@ -7,8 +7,9 @@ import ru.practicum.explorewithme.event.comment.enums.Status;
 @Getter
 @Setter
 @ToString
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class UpdateCommentDto {
     @NotNull
-    private final Status status;
+    private Status status;
 }

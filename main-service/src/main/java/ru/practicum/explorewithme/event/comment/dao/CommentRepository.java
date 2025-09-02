@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    Page<Comment> finsAllByStatus(Status status, Pageable pageable);
+    Page<Comment> findAllByStatus(Status status, Pageable pageable);
 
     List<Comment> findAllByEvent_Id(long eventId);
 
