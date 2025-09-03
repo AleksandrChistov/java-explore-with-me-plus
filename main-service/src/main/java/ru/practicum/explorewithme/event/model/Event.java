@@ -55,8 +55,11 @@ public class Event {
     private User initiator;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "location_id", nullable = false)
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride( name = "lat", column = @Column(name = "location_lat")),
+            @AttributeOverride( name = "lon", column = @Column(name = "location_lon")),
+    })
     @ToString.Exclude
     private Location location;
 
