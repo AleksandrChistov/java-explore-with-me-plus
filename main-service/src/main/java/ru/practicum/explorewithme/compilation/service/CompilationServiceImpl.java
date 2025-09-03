@@ -105,6 +105,7 @@ public class CompilationServiceImpl implements CompilationService {
     /** === Admin endpoints accessible only for admins. === */
 
     @Override
+    @Transactional
     public ResponseCompilationDto save(CreateCompilationDto requestCompilationDto) {
         Compilation newCompilation = compilationMapper.toCompilation(requestCompilationDto);
 
@@ -131,6 +132,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public ResponseCompilationDto update(long compId, UpdateCompilationDto updateCompilationDto) {
         Compilation fromDb = compilationRepository.findById(compId)
                 .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
@@ -160,6 +162,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public void delete(long compId) {
         if (!compilationRepository.existsById(compId)) {
             throw new NotFoundException("Compilation with id=" + compId + " was not found");
