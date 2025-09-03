@@ -20,7 +20,6 @@ import ru.practicum.explorewithme.event.dao.EventSpecifications;
 import ru.practicum.explorewithme.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventParams;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
-import ru.practicum.explorewithme.event.enums.EventsSort;
 import ru.practicum.explorewithme.event.enums.State;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.model.Event;
@@ -54,12 +53,7 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         if (params.getRangeStart() == null) params.setRangeStart(LocalDateTime.now());
 
-        Sort sort;
-        if (EventsSort.VIEWS.equals(params.getEventsSort())) {
-            sort = Sort.by(Sort.Direction.DESC, "views");
-        } else {
-            sort = Sort.by(Sort.Direction.ASC, "eventDate");
-        }
+        Sort sort = params.getEventsSort().getSort();
 
         Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize(), sort);
         List<Event> events = eventRepository.findAll(EventSpecifications.publicSpecification(params), pageable).stream().toList();
