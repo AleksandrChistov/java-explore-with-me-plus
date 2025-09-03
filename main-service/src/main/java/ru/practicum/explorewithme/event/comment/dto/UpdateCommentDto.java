@@ -10,6 +10,6 @@ import ru.practicum.explorewithme.event.comment.enums.Status;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateCommentDto {
-    @NotNull
+    @NotNull(message = "Status can't be null")
     private Status status;
 }

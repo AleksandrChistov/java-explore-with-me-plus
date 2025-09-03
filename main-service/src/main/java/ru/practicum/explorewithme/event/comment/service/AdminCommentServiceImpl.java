@@ -45,7 +45,7 @@ public class AdminCommentServiceImpl implements AdminCommentService {
             comments = commentRepository.findAllByStatus(status, pageable);
         }
 
-        log.debug("Found {} comments", comments.getTotalElements());
+        log.debug("Found {} comments", comments.getSize());
 
         return commentMapper.toCommentResponseDtos(comments.getContent());
     }
