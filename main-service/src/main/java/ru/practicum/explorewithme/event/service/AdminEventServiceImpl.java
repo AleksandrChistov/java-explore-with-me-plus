@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsParams;
+import ru.practicum.StatsUtil;
 import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.category.dao.CategoryRepository;
@@ -32,9 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static ru.practicum.explorewithme.consts.ConstantUtil.EPOCH_LOCAL_DATE_TIME;
 
 @Service
 @RequiredArgsConstructor
@@ -102,14 +100,16 @@ public class AdminEventServiceImpl implements AdminEventService {
 
         eventRepository.save(event);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
-        StatsParams params = new StatsParams();
-        params.setStart(EPOCH_LOCAL_DATE_TIME);
-        params.setEnd(LocalDateTime.now());
-        params.setUris(Collections.singletonList("/events/" + eventId));
-        params.setUnique(false);
+
+        StatsParams params = StatsUtil.buildStatsParams(
+                Collections.singletonList("/events/" + eventId),
+                false
+        );
+
         Long views = statsClient.getStats(params).stream()
                 .mapToLong(StatsView::getHits)
                 .sum();
+
         log.info("Администратором обновлено событие c ID {}.", event.getId());
         return eventMapper.toEventFullDto(event, confirmedRequests, views);
     }
@@ -124,25 +124,16 @@ public class AdminEventServiceImpl implements AdminEventService {
         List<Event> events = eventRepository.findAll(EventSpecifications.adminSpecification(adminEventDto), pageable).getContent();
 
         List<Long> eventIds = events.stream().map(Event::getId).toList();
-        Map<Long, Long> confirmedRequestsMap = requestRepository.getConfirmedRequestsByEventIds(eventIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        r -> (Long) r[0],
-                        r -> (Long) r[1]
-                ));
-        StatsParams params = new StatsParams();
-        params.setStart(EPOCH_LOCAL_DATE_TIME);
-        params.setEnd(LocalDateTime.now());
-        params.setUris(eventIds.stream()
-                .map(id -> "/events/" + id)
-                .toList());
-        params.setUnique(false);
-        Map<Long, Long> viewsMap = statsClient.getStats(params)
-                .stream()
-                .collect(Collectors.toMap(
-                        sv -> Long.parseLong(sv.getUri().split("/")[2]),
-                        StatsView::getHits
-                ));
+        Map<Long, Long> confirmedRequestsMap = StatsUtil.getConfirmedRequestsMap(requestRepository.getConfirmedRequestsByEventIds(eventIds));
+
+        StatsParams params = StatsUtil.buildStatsParams(
+                eventIds.stream()
+                        .map(id -> "/events/" + id)
+                        .toList(),
+                false
+        );
+
+        Map<Long, Long> viewsMap = StatsUtil.getViewsMap(statsClient.getStats(params));
 
         List<EventFullDto> result = events.stream()
                 .map(e -> eventMapper.toEventFullDto(e, confirmedRequestsMap.get(e.getId()), viewsMap.get(e.getId())))

@@ -6,7 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsParams;
-import ru.practicum.StatsView;
+import ru.practicum.StatsUtil;
 import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.compilation.dao.CompilationRepository;
 import ru.practicum.explorewithme.compilation.dto.CreateCompilationDto;
@@ -21,11 +21,8 @@ import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static ru.practicum.explorewithme.consts.ConstantUtil.EPOCH_LOCAL_DATE_TIME;
 
 @Service
 @RequiredArgsConstructor
@@ -174,29 +171,18 @@ public class CompilationServiceImpl implements CompilationService {
     /** === Private internal methods === */
 
     private Map<Long, Long> getConfirmedRequests(List<Long> eventIds) {
-        return requestRepository.getConfirmedRequestsByEventIds(eventIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        r -> (Long) r[0],
-                        r -> (Long) r[1]
-                ));
+        return StatsUtil.getConfirmedRequestsMap(requestRepository.getConfirmedRequestsByEventIds(eventIds));
     }
 
     private Map<Long, Long> getViews(List<Long> eventIds) {
-        StatsParams statsParams = new StatsParams();
-        statsParams.setStart(EPOCH_LOCAL_DATE_TIME);
-        statsParams.setEnd(LocalDateTime.now());
-        statsParams.setUris(eventIds.stream()
-                .map(id -> "/events/" + id)
-                .toList());
-        statsParams.setUnique(false);
+        StatsParams statsParams = StatsUtil.buildStatsParams(
+                eventIds.stream()
+                        .map(id -> "/events/" + id)
+                        .toList(),
+                false
+        );
 
-        return statClient.getStats(statsParams)
-                .stream()
-                .collect(Collectors.toMap(
-                        sv -> Long.parseLong(sv.getUri().split("/")[2]),
-                        StatsView::getHits
-                ));
+        return StatsUtil.getViewsMap(statClient.getStats(statsParams));
     }
 
     private Set<EventShortDto> getEventShortDtos(Set<Event> events, Map<Long, Long> confirmedRequests, Map<Long, Long> views) {

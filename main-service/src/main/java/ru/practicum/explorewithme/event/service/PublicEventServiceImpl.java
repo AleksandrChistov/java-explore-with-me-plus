@@ -32,9 +32,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static ru.practicum.explorewithme.consts.ConstantUtil.EPOCH_LOCAL_DATE_TIME;
 
 @Slf4j
 @Service
@@ -74,29 +71,18 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         List<Long> eventIds = events.stream().map(Event::getId).toList();
 
-        Map<Long, Long> confirmedRequests = requestRepository.getConfirmedRequestsByEventIds(eventIds)
-                .stream()
-                .collect(Collectors.toMap(
-                        r -> (Long) r[0],
-                        r -> (Long) r[1]
-                ));
+        Map<Long, Long> confirmedRequests = StatsUtil.getConfirmedRequestsMap(requestRepository.getConfirmedRequestsByEventIds(eventIds));
 
         buildStatsDtoAndHit(request);
 
-        StatsParams statsParams = new StatsParams();
-        statsParams.setStart(EPOCH_LOCAL_DATE_TIME);
-        statsParams.setEnd(LocalDateTime.now());
-        statsParams.setUris(eventIds.stream()
-                .map(id -> "/events/" + id)
-                .toList());
-        statsParams.setUnique(false);
+        StatsParams statsParams = StatsUtil.buildStatsParams(
+                eventIds.stream()
+                        .map(id -> "/events/" + id)
+                        .toList(),
+                false
+        );
 
-        Map<Long, Long> views = statClient.getStats(statsParams)
-                .stream()
-                .collect(Collectors.toMap(
-                        sv -> Long.parseLong(sv.getUri().split("/")[2]),
-                        StatsView::getHits
-                ));
+        Map<Long, Long> views = StatsUtil.getViewsMap(statClient.getStats(statsParams));
 
         List<EventShortDto> result = events.stream()
                 .map(event -> eventMapper.toEventShortDto(event,
@@ -116,11 +102,10 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         buildStatsDtoAndHit(request);
 
-        StatsParams params = new StatsParams();
-        params.setStart(EPOCH_LOCAL_DATE_TIME);
-        params.setEnd(LocalDateTime.now());
-        params.setUris(Collections.singletonList("/events/" + eventId));
-        params.setUnique(true);
+        StatsParams params = StatsUtil.buildStatsParams(
+                Collections.singletonList("/events/" + eventId),
+                true
+        );
 
         Long views = statClient.getStats(params).stream()
                 .mapToLong(StatsView::getHits)
