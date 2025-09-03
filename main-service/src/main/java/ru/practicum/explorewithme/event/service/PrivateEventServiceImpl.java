@@ -141,9 +141,14 @@ public class PrivateEventServiceImpl implements PrivateEventService {
 
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
 
+        if (event.getPublishedOn() == null) {
+            return eventMapper.toEventFullDto(event, confirmedRequests, 0L);
+        }
+
         StatsParams params = StatsUtil.buildStatsParams(
                 Collections.singletonList("/events/" + eventId),
-                false
+                false,
+                event.getPublishedOn()
         );
 
         Long views = statsClient.getStats(params).stream()
@@ -167,9 +172,14 @@ public class PrivateEventServiceImpl implements PrivateEventService {
         }
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
 
+        if (event.getPublishedOn() == null) {
+            return eventMapper.toEventFullDto(event, confirmedRequests, 0L);
+        }
+
         StatsParams params = StatsUtil.buildStatsParams(
                 Collections.singletonList("/events/" + eventId),
-                false
+                false,
+                event.getPublishedOn()
         );
 
         Long views = statsClient.getStats(params).stream()

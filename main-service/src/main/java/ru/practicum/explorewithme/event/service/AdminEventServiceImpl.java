@@ -101,9 +101,14 @@ public class AdminEventServiceImpl implements AdminEventService {
         eventRepository.save(event);
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
 
+        if (event.getPublishedOn() == null) {
+            return eventMapper.toEventFullDto(event, confirmedRequests, 0L);
+        }
+
         StatsParams params = StatsUtil.buildStatsParams(
                 Collections.singletonList("/events/" + eventId),
-                false
+                false,
+                event.getPublishedOn()
         );
 
         Long views = statsClient.getStats(params).stream()

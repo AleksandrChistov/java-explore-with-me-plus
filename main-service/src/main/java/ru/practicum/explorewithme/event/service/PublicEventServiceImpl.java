@@ -102,9 +102,14 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         buildStatsDtoAndHit(request);
 
+        if (event.getPublishedOn() == null) {
+            return eventMapper.toEventFullDto(event, confirmedRequests, 0L);
+        }
+
         StatsParams params = StatsUtil.buildStatsParams(
                 Collections.singletonList("/events/" + eventId),
-                true
+                true,
+                event.getPublishedOn()
         );
 
         Long views = statClient.getStats(params).stream()

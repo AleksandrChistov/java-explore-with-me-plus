@@ -27,8 +27,12 @@ public class StatsUtil {
     }
 
     public StatsParams buildStatsParams(List<String> uris, boolean unique) {
+        return buildStatsParams(uris, unique, EPOCH_LOCAL_DATE_TIME);
+    }
+
+    public StatsParams buildStatsParams(List<String> uris, boolean unique, LocalDateTime startDate) {
         StatsParams params = new StatsParams();
-        params.setStart(EPOCH_LOCAL_DATE_TIME);
+        params.setStart(startDate);
         params.setEnd(LocalDateTime.now());
         params.setUris(uris);
         params.setUnique(unique);
