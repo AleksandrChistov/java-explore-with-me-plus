@@ -9,7 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.category.dto.ResponseCategoryDto;
 import ru.practicum.explorewithme.category.dto.RequestCategoryDto;
-import ru.practicum.explorewithme.category.service.AdminCategoryService;
+import ru.practicum.explorewithme.category.service.CategoryService;
 
 @RestController
 @Validated
@@ -19,12 +19,12 @@ public class AdminCategoryController {
 
     public static final String URL = "/admin/categories";
 
-    private final AdminCategoryService adminCategoryService;
+    private final CategoryService categoryService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseCategoryDto create(@Valid @RequestBody RequestCategoryDto categoryDto) {
-        return adminCategoryService.save(categoryDto);
+        return categoryService.save(categoryDto);
     }
 
     @PatchMapping("/{catId}")
@@ -33,13 +33,13 @@ public class AdminCategoryController {
             @Positive @PathVariable Long catId,
             @Valid @RequestBody RequestCategoryDto categoryDto
     ) {
-        return adminCategoryService.update(catId, categoryDto);
+        return categoryService.update(catId, categoryDto);
     }
 
     @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@Positive @PathVariable Long catId) {
-        adminCategoryService.delete(catId);
+        categoryService.delete(catId);
     }
 
 }
