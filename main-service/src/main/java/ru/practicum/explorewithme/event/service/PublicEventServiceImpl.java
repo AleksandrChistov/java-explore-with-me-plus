@@ -15,7 +15,7 @@ import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.error.exception.BadRequestException;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.dao.EventRepository;
-import ru.practicum.explorewithme.event.dao.JpaSpecifications;
+import ru.practicum.explorewithme.event.dao.EventSpecifications;
 import ru.practicum.explorewithme.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.EventParams;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
@@ -66,7 +66,7 @@ public class PublicEventServiceImpl implements PublicEventService {
         }
 
         Pageable pageable = PageRequest.of(params.getFrom() / params.getSize(), params.getSize(), sort);
-        List<Event> events = eventRepository.findAll(JpaSpecifications.publicSpecification(params), pageable).stream().toList();
+        List<Event> events = eventRepository.findAll(EventSpecifications.publicSpecification(params), pageable).stream().toList();
 
         if (events.isEmpty()) {
             log.warn("Нет событий по указанным параметрам {}", params);

@@ -15,7 +15,7 @@ import ru.practicum.explorewithme.error.exception.BadRequestException;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.error.exception.RuleViolationException;
 import ru.practicum.explorewithme.event.dao.EventRepository;
-import ru.practicum.explorewithme.event.dao.JpaSpecifications;
+import ru.practicum.explorewithme.event.dao.EventSpecifications;
 import ru.practicum.explorewithme.event.dto.AdminEventDto;
 import ru.practicum.explorewithme.event.dto.EventFullDto;
 import ru.practicum.explorewithme.event.dto.UpdateEventRequest;
@@ -121,7 +121,7 @@ public class AdminEventServiceImpl implements AdminEventService {
                 adminEventDto.getFrom().intValue() / adminEventDto.getSize().intValue(),
                 adminEventDto.getSize().intValue()
         );
-        List<Event> events = eventRepository.findAll(JpaSpecifications.adminSpecification(adminEventDto), pageable).getContent();
+        List<Event> events = eventRepository.findAll(EventSpecifications.adminSpecification(adminEventDto), pageable).getContent();
 
         List<Long> eventIds = events.stream().map(Event::getId).toList();
         Map<Long, Long> confirmedRequestsMap = requestRepository.getConfirmedRequestsByEventIds(eventIds)

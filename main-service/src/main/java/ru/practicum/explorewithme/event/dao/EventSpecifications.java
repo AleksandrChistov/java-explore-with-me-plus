@@ -13,7 +13,7 @@ import ru.practicum.explorewithme.request.model.Request;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JpaSpecifications {
+public class EventSpecifications {
 
     public static Specification<Event> adminSpecification(AdminEventDto adminEventDto) {
         return (root, query, cb) -> {
