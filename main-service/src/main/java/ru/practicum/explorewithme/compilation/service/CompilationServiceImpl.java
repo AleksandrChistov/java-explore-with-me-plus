@@ -9,10 +9,13 @@ import ru.practicum.StatsParams;
 import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.compilation.dao.CompilationRepository;
+import ru.practicum.explorewithme.compilation.dto.CreateCompilationDto;
 import ru.practicum.explorewithme.compilation.dto.ResponseCompilationDto;
+import ru.practicum.explorewithme.compilation.dto.UpdateCompilationDto;
 import ru.practicum.explorewithme.compilation.mapper.CompilationMapper;
 import ru.practicum.explorewithme.compilation.model.Compilation;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
+import ru.practicum.explorewithme.event.dao.EventRepository;
 import ru.practicum.explorewithme.event.dto.EventShortDto;
 import ru.practicum.explorewithme.event.mapper.EventMapper;
 import ru.practicum.explorewithme.event.model.Event;
@@ -31,9 +34,12 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final CompilationMapper compilationMapper;
+    private final EventRepository eventRepository;
+    private final EventMapper eventMapper;
     private final RequestRepository requestRepository;
     private final StatsClient statClient;
-    private final EventMapper eventMapper;
+
+    /** === Public endpoints accessible to all users. === */
 
     @Override
     public List<ResponseCompilationDto> getCompilations(Boolean pinned, int from, int size) {
@@ -95,6 +101,74 @@ public class CompilationServiceImpl implements CompilationService {
 
         return compilationMapper.toCompilationDto(compilation, eventShortDtos);
     }
+
+    /** === Admin endpoints accessible only for admins. === */
+
+    @Override
+    public ResponseCompilationDto save(CreateCompilationDto requestCompilationDto) {
+        Compilation newCompilation = compilationMapper.toCompilation(requestCompilationDto);
+
+        if (requestCompilationDto.getEvents() == null || requestCompilationDto.getEvents().isEmpty()) {
+            Compilation saved = compilationRepository.save(newCompilation);
+            return compilationMapper.toCompilationDto(saved, Collections.emptySet());
+        }
+
+        Set<Event> events = eventRepository.findAllByIdIn(requestCompilationDto.getEvents());
+
+        newCompilation.setEvents(events);
+
+        Compilation saved = compilationRepository.save(newCompilation);
+
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+
+        Set<EventShortDto> eventShortDtos = getEventShortDtos(
+                events,
+                getConfirmedRequests(eventIds),
+                getViews(eventIds)
+        );
+
+        return compilationMapper.toCompilationDto(saved, eventShortDtos);
+    }
+
+    @Override
+    public ResponseCompilationDto update(long compId, UpdateCompilationDto updateCompilationDto) {
+        Compilation fromDb = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException("Compilation with id=" + compId + " was not found"));
+
+        compilationMapper.updateCompilationFromDto(updateCompilationDto, fromDb);
+
+        if (updateCompilationDto.getEvents() == null || updateCompilationDto.getEvents().isEmpty()) {
+            Compilation updated = compilationRepository.save(fromDb);
+            return compilationMapper.toCompilationDto(updated, Collections.emptySet());
+        }
+
+        Set<Event> events = eventRepository.findAllByIdIn(updateCompilationDto.getEvents());
+
+        fromDb.setEvents(events);
+
+        Compilation updated = compilationRepository.save(fromDb);
+
+        List<Long> eventIds = events.stream().map(Event::getId).toList();
+
+        Set<EventShortDto> eventShortDtos = getEventShortDtos(
+                events,
+                getConfirmedRequests(eventIds),
+                getViews(eventIds)
+        );
+
+        return compilationMapper.toCompilationDto(updated, eventShortDtos);
+    }
+
+    @Override
+    public void delete(long compId) {
+        if (!compilationRepository.existsById(compId)) {
+            throw new NotFoundException("Compilation with id=" + compId + " was not found");
+        }
+
+        compilationRepository.deleteById(compId);
+    }
+
+    /** === Private internal methods === */
 
     private Map<Long, Long> getConfirmedRequests(List<Long> eventIds) {
         return requestRepository.getConfirmedRequestsByEventIds(eventIds)
