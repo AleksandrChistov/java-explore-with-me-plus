@@ -18,7 +18,7 @@ public interface CommentMapper {
 
     @Mapping(target = "eventId", source = "event.id")
     @Mapping(target = "authorId", source = "author.id")
-    ResponseCommentDto toCommentResponseDto(Comment comment);
+    ResponseCommentDto toResponseCommentDto(Comment comment);
 
     List<ResponseCommentDto> toCommentResponseDtos(List<Comment> comments);
 
