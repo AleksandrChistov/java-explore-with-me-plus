@@ -12,9 +12,9 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class StatsUtil {
 
-    public final String IP_ADDRESS_PATTERN = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.]){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+    public static final String IP_ADDRESS_PATTERN = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.]){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
 
-    public final LocalDateTime EPOCH_LOCAL_DATE_TIME = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
+    public static final LocalDateTime EPOCH_LOCAL_DATE_TIME = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
 
     public String getIpAddressOrDefault(String ip) {
         Pattern pattern = Pattern.compile(IP_ADDRESS_PATTERN);

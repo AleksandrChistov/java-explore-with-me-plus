@@ -57,8 +57,8 @@ public class Event {
     @NotNull
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride( name = "lat", column = @Column(name = "location_lat")),
-            @AttributeOverride( name = "lon", column = @Column(name = "location_lon")),
+            @AttributeOverride(name = "lat", column = @Column(name = "location_lat")),
+            @AttributeOverride(name = "lon", column = @Column(name = "location_lon")),
     })
     @ToString.Exclude
     private Location location;
