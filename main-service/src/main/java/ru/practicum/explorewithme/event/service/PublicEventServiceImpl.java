@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsDto;
 import ru.practicum.StatsParams;
+import ru.practicum.StatsUtil;
 import ru.practicum.StatsView;
 import ru.practicum.client.StatsClient;
 import ru.practicum.explorewithme.error.exception.BadRequestException;
@@ -26,8 +27,6 @@ import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.request.dao.RequestRepository;
 import ru.practicum.explorewithme.request.enums.Status;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -82,29 +81,7 @@ public class PublicEventServiceImpl implements PublicEventService {
                         r -> (Long) r[1]
                 ));
 
-        String ip = request.getRemoteAddr();
-
-        // todo: does it need in production?
-        if (ip.equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
-            try {
-                InetAddress inetAddress = InetAddress.getLocalHost();
-                ip = inetAddress.getHostAddress();
-            } catch (UnknownHostException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        StatsDto statsDto = StatsDto.builder()
-                .ip(ip)
-                .uri(request.getRequestURI())
-                .app("explore-with-me-plus")
-                .timestamp(LocalDateTime.now())
-                .build();
-
-        log.debug("Сохранение статистики = {}", statsDto);
-
-        statClient.hit(statsDto);
-        log.info("Статистика сохранена.");
+        buildStatsDtoAndHit(request);
 
         StatsParams statsParams = new StatsParams();
         statsParams.setStart(EPOCH_LOCAL_DATE_TIME);
@@ -137,36 +114,38 @@ public class PublicEventServiceImpl implements PublicEventService {
 
         Long confirmedRequests = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
 
-        String ip = request.getRemoteAddr();
-
-        // todo: does it need in production?
-        if (ip.equalsIgnoreCase("0:0:0:0:0:0:0:1")) {
-            try {
-                InetAddress inetAddress = InetAddress.getLocalHost();
-                ip = inetAddress.getHostAddress();
-            } catch (UnknownHostException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        statClient.hit(StatsDto.builder()
-                .ip(ip)
-                .uri(request.getRequestURI())
-                .app("explore-with-me-plus")
-                .timestamp(LocalDateTime.now())
-                .build());
-        log.info("Статистика сохранена.");
+        buildStatsDtoAndHit(request);
 
         StatsParams params = new StatsParams();
         params.setStart(EPOCH_LOCAL_DATE_TIME);
         params.setEnd(LocalDateTime.now());
         params.setUris(Collections.singletonList("/events/" + eventId));
         params.setUnique(true);
+
         Long views = statClient.getStats(params).stream()
                 .mapToLong(StatsView::getHits)
                 .sum();
+
         EventFullDto dto = eventMapper.toEventFullDto(event, confirmedRequests, views);
         log.debug("Получено событие с ID={}: {}", eventId, dto);
         return dto;
     }
+
+    private void buildStatsDtoAndHit(HttpServletRequest request) {
+        String ip = StatsUtil.getIpAddressOrDefault(request.getRemoteAddr());
+
+        log.debug("Получен IP-адрес: {}", ip);
+
+        StatsDto statsDto = StatsDto.builder()
+                .ip(ip)
+                .uri(request.getRequestURI())
+                .app("explore-with-me-plus")
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        log.debug("Сохранение статистики = {}", statsDto);
+        statClient.hit(statsDto);
+        log.info("Статистика сохранена.");
+    }
+
 }

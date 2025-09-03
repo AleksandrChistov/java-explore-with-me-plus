@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.StatsUtil.*;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,7 +27,7 @@ public class StatsDto {
     @NotBlank(message = "URI cannot be blank")
     private String uri;
     @NotBlank(message = "IP address cannot be blank")
-    @Pattern(regexp = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.]){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+    @Pattern(regexp = IP_ADDRESS_PATTERN,
             message = "Invalid IP address format")
     private String ip;
     @NotNull(message = "Timestamp cannot be null")
