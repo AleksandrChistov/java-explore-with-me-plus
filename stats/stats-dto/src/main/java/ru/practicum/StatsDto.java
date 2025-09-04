@@ -9,21 +9,25 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import static ru.practicum.StatsUtil.*;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class StatsDto {
     @NotBlank(message = "App name cannot be blank")
     private String app;
     @NotBlank(message = "URI cannot be blank")
     private String uri;
     @NotBlank(message = "IP address cannot be blank")
-    @Pattern(regexp = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.]){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+    @Pattern(regexp = IP_ADDRESS_PATTERN,
             message = "Invalid IP address format")
     private String ip;
     @NotNull(message = "Timestamp cannot be null")

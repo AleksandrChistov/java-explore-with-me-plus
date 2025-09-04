@@ -3,6 +3,7 @@ package ru.practicum.explorewithme.error;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,14 +21,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleDataIntegrityViolationException(final DataIntegrityViolationException ex) {
+    public ResponseEntity<ApiError> handleDataIntegrityViolationException(final DataIntegrityViolationException ex) {
         log.warn("409 Conflict: {}", ex.getMessage());
-        return new ApiError(HttpStatus.CONFLICT, "Data conflict", ex.getMessage(), null);
+        return getResponseEntity(HttpStatus.CONFLICT, "Data conflict", ex.getMessage(), null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleInvalidInput(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiError> handleInvalidInput(MethodArgumentNotValidException ex) {
         log.warn("400 {}", ex.getMessage());
 
         String message = Optional
@@ -36,7 +37,7 @@ public class GlobalExceptionHandler {
                 .orElse(ex.getMessage());
 
         String stackTrace = getStackTrace(ex);
-        return new ApiError(HttpStatus.BAD_REQUEST, "Invalid input", message, stackTrace);
+        return getResponseEntity(HttpStatus.BAD_REQUEST, "Invalid input", message, stackTrace);
     }
 
     @ExceptionHandler(NotFoundException.class)
@@ -49,10 +50,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ApiError handleException(final Exception ex) {
+    public ResponseEntity<ApiError> handleException(final Exception ex) {
         log.error("500 {}", ex.getMessage(), ex);
         String stackTrace = getStackTrace(ex);
-        return new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", ex.getMessage(), stackTrace);
+        return getResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", ex.getMessage(), stackTrace);
+    }
+
+    private ResponseEntity<ApiError> getResponseEntity(HttpStatus httpStatus, String reason, String message, String stackTrace) {
+        ApiError apiError = new ApiError(httpStatus, reason, message, stackTrace);
+        return new ResponseEntity<>(apiError, httpStatus);
     }
 
     private String getStackTrace(Exception ex) {
