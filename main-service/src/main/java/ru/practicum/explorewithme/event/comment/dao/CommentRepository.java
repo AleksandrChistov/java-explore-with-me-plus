@@ -19,7 +19,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     Optional<Comment> findByIdAndEvent_Id(long commentId, long eventId);
 
-    List<Comment> findByEventIdAndStatus(Long eventId, Status status);
+    Page<Comment> findByEventIdAndStatus(Long eventId, Status status, Pageable pageable);
 
-    List<Comment> findByEventIdInAndStatus(List<Long> eventIds, Status status);
+    Page<Comment> findByEventIdInAndStatus(List<Long> eventIds, Status status, Pageable pageable);
 }
