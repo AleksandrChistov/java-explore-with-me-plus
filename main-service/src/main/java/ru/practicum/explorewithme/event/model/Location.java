@@ -1,10 +1,12 @@
 package ru.practicum.explorewithme.event.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-@Entity
-@Table(name = "locations")
+import java.util.Objects;
+
+@Embeddable
 @Getter
 @Setter
 @ToString
@@ -12,14 +14,10 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Location {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "lat", nullable = false)
+    @NotNull
     private Float lat;
 
-    @Column(name = "lon", nullable = false)
+    @NotNull
     private Float lon;
 
     @Override
@@ -27,11 +25,13 @@ public class Location {
         if (o == null || getClass() != o.getClass()) return false;
 
         Location location = (Location) o;
-        return id.equals(location.id);
+        return Objects.equals(lat, location.lat) && Objects.equals(lon, location.lon);
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        int result = Objects.hashCode(lat);
+        result = 31 * result + Objects.hashCode(lon);
+        return result;
     }
 }

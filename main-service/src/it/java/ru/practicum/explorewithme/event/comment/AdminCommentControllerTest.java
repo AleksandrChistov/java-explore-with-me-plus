@@ -32,8 +32,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -63,7 +62,6 @@ public class AdminCommentControllerTest {
 
         em.persist(user);
         em.persist(category);
-        em.persist(location);
         em.persist(event);
         em.persist(comment1);
         em.persist(comment2);
@@ -99,14 +97,13 @@ public class AdminCommentControllerTest {
 
         em.persist(user);
         em.persist(category);
-        em.persist(location);
         em.persist(event);
         em.persist(comment1);
         em.persist(comment2);
         em.flush();
 
         MvcResult result = mvc.perform(get(AdminCommentController.URL + "/comments")
-                        .param("status", "PUBLISHED")
+                        .param("status", Status.PUBLISHED.name())
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andExpect(status().isOk())
@@ -119,8 +116,54 @@ public class AdminCommentControllerTest {
 
         assertNotNull(response);
         assertEquals(1, response.size());
-        assertEquals("First comment", response.get(0).getText());
-        assertEquals(Status.PUBLISHED, response.get(0).getStatus());
+        assertEquals("First comment", response.getFirst().getText());
+        assertEquals(Status.PUBLISHED, response.getFirst().getStatus());
+    }
+
+    @Test
+    void getAll_shouldReturnCommentsFilteredByFromAndSize() throws Exception {
+        User user = createUser("testUser", "test@example.com");
+        Category category = createCategory("Test Category");
+        Location location = createLocation(55.75f, 37.62f);
+        Event event = createEvent(user, category, location);
+        Comment comment1 = createComment(user, event, "First comment");
+        comment1.setStatus(Status.PUBLISHED);
+        Comment comment2 = createComment(user, event, "Second comment");
+        Comment comment3 = createComment(user, event, "3 comment");
+        Comment comment4 = createComment(user, event, "4 comment");
+        Comment comment5 = createComment(user, event, "5 comment");
+        Comment comment6 = createComment(user, event, "6 comment");
+        Comment comment7 = createComment(user, event, "7 comment");
+
+        em.persist(user);
+        em.persist(category);
+        em.persist(event);
+        em.persist(comment1);
+        em.persist(comment2);
+        em.persist(comment3);
+        em.persist(comment4);
+        em.persist(comment5);
+        em.persist(comment6);
+        em.persist(comment7);
+        em.flush();
+
+        MvcResult result = mvc.perform(get(AdminCommentController.URL + "/comments")
+                        .param("from", "2")
+                        .param("size", "2")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        List<ResponseCommentDto> response = objectMapper.readValue(content,
+                objectMapper.getTypeFactory().constructCollectionType(List.class, ResponseCommentDto.class));
+
+        assertNotNull(response);
+        assertEquals(2, response.size());
+        assertTrue(response.stream().anyMatch(c -> c.getText().equals("3 comment")));
+        assertTrue(response.stream().anyMatch(c -> c.getText().equals("4 comment")));
     }
 
     @Test
@@ -135,7 +178,6 @@ public class AdminCommentControllerTest {
 
         em.persist(user);
         em.persist(category);
-        em.persist(location);
         em.persist(event1);
         em.persist(event2);
         em.persist(comment1);
@@ -155,8 +197,46 @@ public class AdminCommentControllerTest {
 
         assertNotNull(response);
         assertEquals(1, response.size());
-        assertEquals("Event 1 comment", response.get(0).getText());
-        assertEquals(event1.getId(), response.get(0).getEventId());
+        assertEquals("Event 1 comment", response.getFirst().getText());
+        assertEquals(event1.getId(), response.getFirst().getEventId());
+    }
+
+    @Test
+    void getByEventId_shouldReturnCommentsForEventFilteredByStatus() throws Exception {
+        User user = createUser("testUser", "test@example.com");
+        Category category = createCategory("Test Category");
+        Location location = createLocation(55.75f, 37.62f);
+        Event event1 = createEvent(user, category, location);
+        Event event2 = createEvent(user, category, location);
+        Comment comment1 = createComment(user, event1, "Event 1 comment");
+        Comment comment2 = createComment(user, event2, "Event 2 comment");
+        comment2.setStatus(Status.PUBLISHED);
+
+        em.persist(user);
+        em.persist(category);
+        em.persist(event1);
+        em.persist(event2);
+        em.persist(comment1);
+        em.persist(comment2);
+        em.flush();
+
+        MvcResult result = mvc.perform(get(AdminCommentController.URL + "/{eventId}/comments", event2.getId())
+                        .param("status", Status.PUBLISHED.name())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andReturn();
+
+        String content = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+        List<ResponseCommentDto> response = objectMapper.readValue(content,
+                objectMapper.getTypeFactory().constructCollectionType(List.class, ResponseCommentDto.class));
+
+        assertNotNull(response);
+        assertEquals(1, response.size());
+        assertEquals(event2.getId(), response.getFirst().getEventId());
+        assertEquals("Event 2 comment", response.getFirst().getText());
+        assertEquals(Status.PUBLISHED, response.getFirst().getStatus());
     }
 
     @Test
@@ -170,7 +250,6 @@ public class AdminCommentControllerTest {
 
         em.persist(user);
         em.persist(category);
-        em.persist(location);
         em.persist(event);
         em.persist(comment);
         em.flush();
@@ -201,18 +280,19 @@ public class AdminCommentControllerTest {
 
         em.persist(user);
         em.persist(category);
-        em.persist(location);
         em.persist(event);
         em.persist(comment);
         em.flush();
 
-//        UpdateCommentDto updateDto = new UpdateCommentDto();
+        UpdateCommentDto updateDto = new UpdateCommentDto(null);
 
         mvc.perform(patch(AdminCommentController.URL + "/{eventId}/comments/{commentId}", event.getId(), comment.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .content(objectMapper.writeValueAsString("{}")))
-                .andExpect(status().isBadRequest());
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid argument"))
+                .andExpect(jsonPath("$.reason").value("Status can't be null"));
     }
 
     @Test
@@ -225,18 +305,16 @@ public class AdminCommentControllerTest {
 
         em.persist(user);
         em.persist(category);
-        em.persist(location);
         em.persist(event);
         em.persist(comment);
         em.flush();
 
-//        UpdateCommentDto updateDto = new UpdateCommentDto();
-
         mvc.perform(patch(AdminCommentController.URL + "/{eventId}/comments/{commentId}", event.getId(), comment.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .content(objectMapper.writeValueAsString("{status: some_status}")))
-                .andExpect(status().isBadRequest());
+                        .content(objectMapper.writeValueAsString("{\"status\": \"some_status\"}")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid JSON"));
     }
 
     @Test
@@ -248,7 +326,6 @@ public class AdminCommentControllerTest {
 
         em.persist(user);
         em.persist(category);
-        em.persist(location);
         em.persist(event);
         em.flush();
 
