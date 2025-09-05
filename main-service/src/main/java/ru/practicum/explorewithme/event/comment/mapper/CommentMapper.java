@@ -18,11 +18,14 @@ public interface CommentMapper {
 
     @Mapping(target = "eventId", source = "event.id")
     @Mapping(target = "authorId", source = "author.id")
-    ResponseCommentDto toCommentResponseDto(Comment comment);
+    ResponseCommentDto toResponseCommentDto(Comment comment);
 
-    List<ResponseCommentDto> toCommentResponseDtos(List<Comment> comments);
+    List<ResponseCommentDto> toResponseCommentDtos(List<Comment> comments);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "created", ignore = true)
+    @Mapping(target = "updated", ignore = true)
     @Mapping(target = "event", source = "event")
     @Mapping(target = "author", source = "author")
     Comment toComment(NewCommentDto newCommentDto, Event event, User author);

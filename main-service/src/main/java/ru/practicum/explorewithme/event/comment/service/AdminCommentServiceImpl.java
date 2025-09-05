@@ -47,7 +47,7 @@ public class AdminCommentServiceImpl implements AdminCommentService {
 
         log.debug("Found {} comments", comments.getSize());
 
-        return commentMapper.toCommentResponseDtos(comments.getContent());
+        return commentMapper.toResponseCommentDtos(comments.getContent());
     }
 
     @Override
@@ -67,7 +67,7 @@ public class AdminCommentServiceImpl implements AdminCommentService {
 
         log.debug("Found {} comments", comments.size());
 
-        return commentMapper.toCommentResponseDtos(comments);
+        return commentMapper.toResponseCommentDtos(comments);
     }
 
     @Override
