@@ -52,4 +52,5 @@ public class PublicCommentServiceImpl implements PublicCommentService {
 
         return commentMapper.toCommentResponseDtos(comments.getContent());
     }
+
 }

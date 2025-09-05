@@ -21,7 +21,6 @@ import java.util.List;
 @Validated
 @RequiredArgsConstructor
 public class PublicCommentController {
-
     private final PublicCommentService publicCommentService;
 
     @GetMapping("/{eventId}/comments")

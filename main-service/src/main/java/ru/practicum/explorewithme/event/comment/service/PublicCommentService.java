@@ -11,4 +11,5 @@ public interface PublicCommentService {
     List<ResponseCommentDto> getCommentsByEventId(@Positive Long eventId, Pageable pageable);
 
     List<ResponseCommentDto> getAllCommentsByEventIds(@NotNull List<Long> eventIds, Pageable pageable);
+
 }
