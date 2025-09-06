@@ -79,7 +79,7 @@ public class AdminCommentServiceImpl implements AdminCommentService {
         Comment comment = commentRepository.findByIdAndEvent_Id(commentId, eventId)
                 .orElseThrow(() -> new NotFoundException("Comment with id=" + commentId + " and eventId=" + eventId + " was not found"));
 
-        commentMapper.updateCommentFromDto(commentDto, comment);
+        commentMapper.updateCommentStatusFromDto(commentDto, comment);
 
         commentRepository.save(comment);
 
