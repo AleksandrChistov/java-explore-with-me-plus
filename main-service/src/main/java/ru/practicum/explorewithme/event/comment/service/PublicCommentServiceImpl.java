@@ -2,7 +2,9 @@ package ru.practicum.explorewithme.event.comment.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
 import ru.practicum.explorewithme.event.comment.dao.CommentRepository;
@@ -24,16 +26,20 @@ public class PublicCommentServiceImpl implements PublicCommentService {
     private final EventRepository eventRepository;
 
     @Override
-    public List<ResponseCommentDto> getCommentsByEventId(Long eventId, Pageable pageable) {
+    public List<ResponseCommentDto> getCommentsByEventId(Long eventId, int from, int size) {
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("created").descending());
+
         if (!eventRepository.existsById(eventId)) {
             throw new NotFoundException("Событие с id " + eventId + " не найдено");
         }
+
         Page<Comment> comments = commentRepository.findByEventIdAndStatus(eventId, Status.PUBLISHED, pageable);
-        return commentMapper.toCommentResponseDtos(comments.getContent());
+
+        return commentMapper.toResponseCommentDtos(comments.getContent());
     }
 
     @Override
-    public List<ResponseCommentDto> getAllCommentsByEventIds(List<Long> eventIds, Pageable pageable) {
+    public List<ResponseCommentDto> getAllCommentsByEventIds(List<Long> eventIds, int from, int size) {
         if (eventIds == null || eventIds.isEmpty()) {
             throw new IllegalArgumentException("Список eventIds не может быть пустым");
         }
@@ -46,11 +52,13 @@ public class PublicCommentServiceImpl implements PublicCommentService {
             throw new NotFoundException("Не найдено ни одного события из списка: " + eventIds);
         }
 
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("created").descending());
+
         Page<Comment> comments = commentRepository.findByEventIdInAndStatus(existingEventIds,
                 Status.PUBLISHED,
                 pageable);
 
-        return commentMapper.toCommentResponseDtos(comments.getContent());
+        return commentMapper.toResponseCommentDtos(comments.getContent());
     }
 
 }

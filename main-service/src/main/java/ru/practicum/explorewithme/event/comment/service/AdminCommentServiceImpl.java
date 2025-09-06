@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.error.exception.NotFoundException;
@@ -35,7 +36,7 @@ public class AdminCommentServiceImpl implements AdminCommentService {
     public List<ResponseCommentDto> getAll(Status status, int from, int size) {
         log.info("Get all comments with status={} from={} size={}", status, from, size);
 
-        Pageable pageable = PageRequest.of(from / size, size);
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("created").descending());
 
         Page<Comment> comments;
 

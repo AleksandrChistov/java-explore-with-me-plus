@@ -1,6 +1,8 @@
 package ru.practicum.explorewithme.event.comment.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +31,8 @@ public class AdminCommentController {
     @ResponseStatus(HttpStatus.OK)
     public List<ResponseCommentDto> getAll(
             @RequestParam(required = false) Status status,
-            @PositiveOrZero @RequestParam(defaultValue = "0") int from,
-            @Positive @RequestParam(defaultValue = "10") int size
+            @PositiveOrZero @RequestParam(defaultValue = "0") @Min(0) int from,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size
     ) {
         return adminCommentService.getAll(status, from, size);
     }
