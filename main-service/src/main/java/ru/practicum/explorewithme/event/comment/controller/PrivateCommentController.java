@@ -17,35 +17,42 @@ import ru.practicum.explorewithme.event.comment.service.PrivateCommentService;
 @AllArgsConstructor
 public class PrivateCommentController {
 
+    public static final String URL = "/users/{userId}/events/{eventId}/comments";
+
     private final PrivateCommentService service;
 
-    public static final String URL = "/users/{userId}/events/{eventId}";
-
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("/comments")
-    public ResponseCommentDto create(@PathVariable @Positive Long userId,
-                                     @PathVariable @Positive Long eventId,
-                                     @RequestBody @Valid NewCommentDto dto) {
-        log.info("Создание комментария ");
+    @PostMapping
+    public ResponseCommentDto create(
+            @PathVariable @Positive Long userId,
+            @PathVariable @Positive Long eventId,
+            @RequestBody @Valid NewCommentDto dto
+    ) {
+        log.info("Создание комментария");
         return service.create(userId, eventId, dto);
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @PatchMapping("/{commentId}")
+    public ResponseCommentDto patch(
+            @PathVariable @Positive Long userId,
+            @PathVariable @Positive Long eventId,
+            @PathVariable @Positive Long commentId,
+            @RequestBody @Valid NewCommentDto dto
+    ) {
+        log.info("Изменение комментария автором.");
+        return service.patch(userId, eventId, commentId, dto);
+    }
+
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/comments/{commentId}")
-    public void delete(@PathVariable @Positive Long userId,
-                       @PathVariable @Positive Long eventId,
-                       @PathVariable @Positive Long commentId) {
+    @DeleteMapping("/{commentId}")
+    public void delete(
+            @PathVariable @Positive Long userId,
+            @PathVariable @Positive Long eventId,
+            @PathVariable @Positive Long commentId
+    ) {
         log.info("Удаление пользователем своего комментария.");
         service.delete(userId, eventId, commentId);
     }
 
-    @ResponseStatus(HttpStatus.OK)
-    @PatchMapping("/comments/{commentId}")
-    public ResponseCommentDto patch(@PathVariable @Positive Long userId,
-                                    @PathVariable @Positive Long eventId,
-                                    @PathVariable @Positive Long commentId,
-                                    @RequestBody @Valid NewCommentDto dto) {
-        log.info("Изменение комментария автором.");
-        return service.patch(userId, eventId, commentId, dto);
-    }
 }
