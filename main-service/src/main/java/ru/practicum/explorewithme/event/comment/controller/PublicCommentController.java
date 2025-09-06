@@ -35,7 +35,7 @@ public class PublicCommentController {
     public List<ResponseCommentDto> getAllCommentsByEventIds(
             @NotNull @RequestParam("eventIds") List<Long> eventIds,
             @RequestParam(defaultValue = "0") @Min(0) int from,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size
     ) {
         return publicCommentService.getAllCommentsByEventIds(eventIds, from, size);
     }

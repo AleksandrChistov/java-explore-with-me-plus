@@ -7,9 +7,9 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import ru.practicum.explorewithme.event.comment.dto.NewCommentDto;
 import ru.practicum.explorewithme.event.comment.dto.ResponseCommentDto;
 import ru.practicum.explorewithme.event.comment.dto.UpdateCommentDto;
+import ru.practicum.explorewithme.event.comment.enums.Status;
 import ru.practicum.explorewithme.event.comment.model.Comment;
 import ru.practicum.explorewithme.event.model.Event;
-import ru.practicum.explorewithme.request.enums.Status;
 import ru.practicum.explorewithme.user.model.User;
 
 import java.util.List;
@@ -29,9 +29,9 @@ public interface CommentMapper {
     List<ResponseCommentDto> toResponseCommentDtos(List<Comment> comments);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "status", ignore = true, expression = "java(Status.PENDING)")
-    @Mapping(target = "created", ignore = true, expression = "java(LocalDateTime.now())")
     @Mapping(target = "updated", ignore = true)
+    @Mapping(target = "status", expression = "java(Status.PENDING)")
+    @Mapping(target = "created", expression = "java(LocalDateTime.now())")
     @Mapping(target = "event", source = "event")
     @Mapping(target = "author", source = "author")
     Comment toComment(NewCommentDto newCommentDto, Event event, User author);
