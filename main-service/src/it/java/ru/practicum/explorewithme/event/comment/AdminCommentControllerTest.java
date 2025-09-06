@@ -129,10 +129,15 @@ public class AdminCommentControllerTest {
         Comment comment1 = createComment(user, event, "First comment");
         comment1.setStatus(Status.PUBLISHED);
         Comment comment2 = createComment(user, event, "Second comment");
+        Thread.sleep(10);
         Comment comment3 = createComment(user, event, "3 comment");
+        Thread.sleep(10);
         Comment comment4 = createComment(user, event, "4 comment");
+        Thread.sleep(10);
         Comment comment5 = createComment(user, event, "5 comment");
+        Thread.sleep(10);
         Comment comment6 = createComment(user, event, "6 comment");
+        Thread.sleep(10);
         Comment comment7 = createComment(user, event, "7 comment");
 
         em.persist(user);
@@ -162,7 +167,7 @@ public class AdminCommentControllerTest {
 
         assertNotNull(response);
         assertEquals(2, response.size());
-        assertTrue(response.stream().anyMatch(c -> c.getText().equals("3 comment")));
+        assertTrue(response.stream().anyMatch(c -> c.getText().equals("5 comment")));
         assertTrue(response.stream().anyMatch(c -> c.getText().equals("4 comment")));
     }
 
@@ -366,6 +371,7 @@ public class AdminCommentControllerTest {
         return Comment.builder()
                 .text(text)
                 .event(event)
+                .created(LocalDateTime.now())
                 .author(user)
                 .status(Status.PENDING)
                 .build();

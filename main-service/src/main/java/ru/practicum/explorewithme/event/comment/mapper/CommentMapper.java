@@ -12,8 +12,9 @@ import ru.practicum.explorewithme.event.model.Event;
 import ru.practicum.explorewithme.user.model.User;
 
 import java.util.List;
+import java.time.LocalDateTime;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, imports = {LocalDateTime.class})
 public interface CommentMapper {
 
     @Mapping(target = "eventId", source = "event.id")
@@ -24,12 +25,13 @@ public interface CommentMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)
-    @Mapping(target = "created", ignore = true)
     @Mapping(target = "updated", ignore = true)
+    @Mapping(target = "created", expression = "java(LocalDateTime.now())")
     @Mapping(target = "event", source = "event")
     @Mapping(target = "author", source = "author")
     Comment toComment(NewCommentDto newCommentDto, Event event, User author);
 
+    @Mapping(target = "updated", expression = "java(LocalDateTime.now())")
     void updateCommentFromDto(UpdateCommentDto commentDto, @MappingTarget Comment comment);
 
 }
